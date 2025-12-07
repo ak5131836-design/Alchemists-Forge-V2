@@ -1,46 +1,26 @@
-# 1. MANDATORY ROOT KEY: Defines the YAML version
-version: 1.0.0
-trigger:
-  branch:
-    - master
-    - main
-
-# 2. MANDATORY ROOT KEY: Defines the build pipelines
-workflows:
-  android-alpha-build:
-    name: Android Alpha Build (Cordova - No GPG)
-    instance_type: mac_mini_m2
-    environment:
-      java: 21 
-      node: 18
-      vars:
-        CORDOVA_ANDROID_VERSION: "12.0.0" 
-
-    # --- Build Steps (FINAL, MINIMALIST SEQUENCE) ---
+    # --- Build Steps (FINAL, CORRECTED SEQUENCE) ---
     scripts:
       - name: Install Cordova CLI
         script: npm install -g cordova
 
-      - name: Create Project Structure
+      - name: Create Project Structure and Move Files
         script: |
           # 1. Initialize the Cordova Project in a directory named 'project'
           cordova create project com.forge.alchemist "The Alchemist's Forge"
           
-          # 2. Move into the newly created project directory (CRITICAL STEP)
-          cd project
+          # 2. Clean the project's boilerplate www folder
+          rm -rf project/www/*
           
-          # 3. Clean the boilerplate www folder
-          rm -rf www/*
-          
-          # 4. Copy your actual game files from the repository root ($CM_BUILD_DIR) 
+          # 3. Copy ALL your game files and assets from the repository root ($CM_BUILD_DIR) 
           # into the project's required www folder.
-          cp -r $CM_BUILD_DIR/* www/
+          cp -r $CM_BUILD_DIR/* project/www/
           
-          # 5. Move config.xml (which Cordova created) to the root of the project
-          mv www/config.xml . 
+          # 4. Move the config.xml (which Cordova created) to the desired location (root of the project folder)
+          mv project/www/config.xml project/
           
-          # 6. Delete unnecessary files
-          rm -rf www/node_modules
+          # 5. CRITICAL STEP: Change directory into the project folder.
+          # All subsequent steps will run *inside* this valid Cordova project.
+          cd project
           
       - name: Add Android Platform
         # This command runs inside the 'project' directory where config.xml now sits
@@ -56,5 +36,5 @@ workflows:
           
     # --- Artifacts (Output) ---
     artifacts:
+      - "*.apk" 
       - platforms/android/app/build/outputs/**/*.apk
-      

@@ -12,7 +12,6 @@ workflows:
     environment:
       java: 21
       node: 18
-      android: 34
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0"
 
@@ -21,7 +20,12 @@ workflows:
         script: |
           npm install -g cordova
 
-      - name: Prepare project (make sure android platform exists)
+      - name: Install Android SDK tools + accept licenses
+        script: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Prepare platform
         script: |
           if [ ! -d "platforms/android" ]; then
             cordova platform add android@$CORDOVA_ANDROID_VERSION
@@ -33,16 +37,15 @@ workflows:
         script: |
           cordova build android --debug
 
-      - name: Copy APK artifact
+      - name: Locate & copy APK
         script: |
           APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
-          echo "APK_PATH: $APK_PATH"
 
           if [ -f "$APK_PATH" ]; then
             cp "$APK_PATH" app-debug.apk
-            echo "APK copied successfully!"
+            echo "SUCCESS: APK copied → app-debug.apk"
           else
-            echo "APK NOT FOUND — build likely failed!"
+            echo "ERROR: APK not found!"
             exit 1
           fi
 

@@ -16,22 +16,21 @@ workflows:
       vars:
         # Set the target Cordova Android version
         CORDOVA_ANDROID_VERSION: "12.0.0" 
-# --- Build Steps (FINAL, MINIMALIST SEQUENCE) ---
+# --- Build Steps (FINAL, STABLE SEQUENCE) ---
     scripts:
-      - name: Install Cordova CLI
-        script: npm install -g cordova
-
-      - name: Add Android Platform
-        # This command must be run from the repository root (where config.xml should be located).
-        # We assume the user has placed a valid config.xml file in the repository root.
-        script: cordova platform add android@$CORDOVA_ANDROID_VERSION
-          
-      - name: Build the Android Debug APK
+      - name: Full Android Build Pipeline
         script: |
-          # The compilation command runs from the root.
+          # 1. Install Cordova CLI
+          npm install -g cordova
+          
+          # 2. Add Android Platform (Must be run before platform add)
+          # We assume the user has placed a valid config.xml file in the repository root.
+          cordova platform add android@$CORDOVA_ANDROID_VERSION
+          
+          # 3. Build the Android Debug APK
           cordova build android --debug
           
-          # CRITICAL FIX: Locate and copy the APK file. We use a search to confirm the path, then copy it.
+          # 4. CRITICAL FIX: Locate and copy the APK file. We use a search to confirm the path, then copy it.
           echo "Attempting to locate and copy the generated APK file..."
           
           APK_PATH=$(find platforms/android/ -name "app-debug.apk")

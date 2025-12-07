@@ -1,38 +1,53 @@
 workflows:
   android-alpha-build:
-    name: Android Alpha Build (Cordova)
+    name: Android Alpha Build (Cordova - No GPG)
     instance_type: mac_mini_m2 # Fast machine for quick build
     environment:
-      # Removed the problematic 'android: 34' line
-      java: 21 # Ensure the correct JDK is used
+      # Removed the explicit android version; using stable settings
+      java: 21 
       node: 18
-      # Set the Cordova platform version to match the installed SDK (Optional, for older versions)
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0" 
 
-    # --- Build Steps ---
+    # --- Build Steps (CORRECTED SEQUENCE) ---
     scripts:
       - name: Install Cordova CLI
         script: npm install -g cordova
 
-      - name: Install Plugins (GPG, etc.)
+      - name: Initialize Cordova Project
+        # 1. Create the project structure using a temporary directory
+        # 2. Copy the source files (index.html, assets, etc.) from the root
         script: |
-          # Install your GPG plugin and dependencies
-          cordova plugin add cordova-plugin-googleplayservices
-          cordova plugin add com.sreedesg.cordova.gpg --variable GPG_APP_ID="YOUR_GPG_APP_ID"
-          # NOTE: REPLACE YOUR_GPG_APP_ID with your actual numeric ID
-
+          cordova create temp_app com.forge.alchemist "The Alchemist's Forge"
+          
+          # Change directory into the temp project
+          cd temp_app
+          
+          # Remove boilerplate www
+          rm -rf www/*
+          
+          # Copy your game files from the repository root into the temporary project's www folder
+          cp -r $CM_BUILD_DIR/* www/
+          
+          # Move assets and config files back to the root of the temp_app structure for compilation
+          mv www/assets . 
+          mv www/config.xml .
+          
       - name: Add Android Platform
-        # Use the variable set above to ensure compatibility
+        # This command runs inside the temp_app directory
         script: cordova platform add android@$CORDOVA_ANDROID_VERSION
 
       - name: Build the Android Debug APK
-        # This command runs Gradle and generates the APK
-        script: cordova build android --debug --buildConfig=build.json
-
+        script: |
+          # The compilation command runs inside the temp_app directory
+          cordova build android --debug
+          
+          # Move artifacts (APK) back to the root ($CM_BUILD_DIR) for output
+          cp platforms/android/app/build/outputs/apk/debug/app-debug.apk $CM_BUILD_DIR/
+          
     # --- Artifacts (Output) ---
     artifacts:
-      - platforms/android/app/build/outputs/**/*.apk
+      - "*.apk" # This will find the app-debug.apk copied to the root directory
 
     # --- Publishing ---
     # Optional: Set up email publishing here

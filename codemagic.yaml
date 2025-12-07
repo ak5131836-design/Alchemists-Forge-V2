@@ -10,7 +10,7 @@ workflows:
     name: Android Alpha Build (Cordova)
     instance_type: mac_mini_m2
     environment:
-      java: 21
+      java: 17          # ← FIXED: Java 21 → 17
       node: 18
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0"
@@ -37,8 +37,9 @@ workflows:
             cordova prepare android
           fi
 
-      - name: Build APK
+      - name: Build APK (Debug)
         script: |
+          export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # ← Force Java 17 for Gradle
           cordova build android --debug
 
       - name: Locate & copy APK

@@ -1,29 +1,49 @@
+# 1. MANDATORY ROOT KEY: Defines the YAML version
+version: 1.0.0
+trigger:
+  branch:
+    - master
+    - main
+
+# 2. MANDATORY ROOT KEY: Defines the build pipelines
+workflows:
+  android-alpha-build:
+    name: Android Alpha Build (Cordova - No GPG)
+    instance_type: mac_mini_m2
+    environment:
+      java: 21 
+      node: 18
+      vars:
+        CORDOVA_ANDROID_VERSION: "12.0.0" 
+
     # --- Build Steps (FINAL, CORRECTED SEQUENCE) ---
     scripts:
-      - name: Install Cordova CLI
-        script: npm install -g cordova
-
-      - name: Create Project Structure and Move Files
+      - name: Install Cordova CLI and Initialize Project
         script: |
-          # 1. Initialize the Cordova Project in a directory named 'project'
+          # 1. Install Cordova CLI
+          npm install -g cordova
+          
+          # 2. Initialize the Cordova Project in a directory named 'project'
           cordova create project com.forge.alchemist "The Alchemist's Forge"
           
-          # 2. Clean the project's boilerplate www folder
-          rm -rf project/www/*
-          
-          # 3. Copy ALL your game files and assets from the repository root ($CM_BUILD_DIR) 
-          # into the project's required www folder.
-          cp -r $CM_BUILD_DIR/* project/www/
-          
-          # 4. Move the config.xml (which Cordova created) to the desired location (root of the project folder)
-          mv project/www/config.xml project/
-          
-          # 5. CRITICAL STEP: Change directory into the project folder.
-          # All subsequent steps will run *inside* this valid Cordova project.
+          # 3. CRITICAL: Switch working directory to the new project root
           cd project
           
+          # 4. Clean the boilerplate www folder created by Cordova
+          rm -rf www/*
+          
+          # 5. Copy ALL your game files from the repository root (../) 
+          # into the project's required www folder.
+          cp -r ../* www/
+          
+          # 6. Move config.xml (which Cordova created) to the root of the project
+          mv www/config.xml . 
+          
+          # 7. Delete unnecessary files
+          rm -rf www/node_modules
+          
       - name: Add Android Platform
-        # This command runs inside the 'project' directory where config.xml now sits
+        # This command runs *inside* the 'project' folder due to the 'cd project' above.
         script: cordova platform add android@$CORDOVA_ANDROID_VERSION
 
       - name: Build the Android Debug APK
@@ -38,3 +58,4 @@
     artifacts:
       - "*.apk" 
       - platforms/android/app/build/outputs/**/*.apk
+      

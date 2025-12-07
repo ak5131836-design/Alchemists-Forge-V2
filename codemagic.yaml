@@ -1,51 +1,51 @@
-# 1. MANDATORY ROOT KEY: Defines the YAML version
 version: 1.0.0
+
 trigger:
   branch:
     - master
     - main
 
-# 2. MANDATORY ROOT KEY: Defines the build pipelines
 workflows:
   android-alpha-build:
-    name: Android Alpha Build (Cordova - No GPG)
+    name: Android Alpha Build (Cordova)
     instance_type: mac_mini_m2
     environment:
-      java: 21 
+      java: 21
       node: 18
+      android: 34
       vars:
-        # Set the target Cordova Android version
-        CORDOVA_ANDROID_VERSION: "12.0.0" 
-# --- Build Steps (FINAL, SIMPLEST SEQUENCE) ---
-    scripts:
-      - name: Full Android Build Pipeline
-        script: |
-          # 1. Install Cordova CLI
-          npm install -g cordova
-          
-          # 2. Add Android Platform (config.xml is now in the root)
-          cordova platform add android@$CORDOVA_ANDROID_VERSION
-          
-          # 3. Execute the build command
-          cordova build android --debug
-          
-          # 4. CRITICAL FIX: Locate and copy the APK file. We search for the file path, then copy it.
-          echo "Attempting to locate and copy the generated APK file..."
-          
-          APK_PATH=$(find platforms/android/ -name "app-debug.apk")
-          
-          if [ -f "$APK_PATH" ]; then
-            echo "SUCCESS: Found APK at $APK_PATH"
-            # Copy the found APK to the root directory for Codemagic to pick up
-            cp "$APK_PATH" .
-          else
-            echo "ERROR: Failed to locate app-debug.apk after build. Build failed earlier."
-            exit 1 # Fail the script if the APK is not found
-          fi
-          
-    # --- Artifacts (Output) ---
-    artifacts:
-      - "*.apk"
+        CORDOVA_ANDROID_VERSION: "12.0.0"
 
+    scripts:
+      - name: Install Cordova CLI
+        script: |
+          npm install -g cordova
+
+      - name: Prepare project (make sure android platform exists)
+        script: |
+          if [ ! -d "platforms/android" ]; then
+            cordova platform add android@$CORDOVA_ANDROID_VERSION
+          else
+            cordova prepare android
+          fi
+
+      - name: Build APK
+        script: |
+          cordova build android --debug
+
+      - name: Copy APK artifact
+        script: |
+          APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+          echo "APK_PATH: $APK_PATH"
+
+          if [ -f "$APK_PATH" ]; then
+            cp "$APK_PATH" app-debug.apk
+            echo "APK copied successfully!"
+          else
+            echo "APK NOT FOUND — build likely failed!"
+            exit 1
+          fi
+
+    artifacts:
+      - app-debug.apk
       - platforms/android/app/build/outputs/**/*.apk
-      

@@ -1,4 +1,22 @@
-# --- Build Steps (FINAL, MINIMALIST SEQUENCE) ---
+# 1. MANDATORY ROOT KEY: Defines the YAML version
+version: 1.0.0
+trigger:
+  branch:
+    - master
+    - main
+
+# 2. MANDATORY ROOT KEY: Defines the build pipelines
+workflows:
+  android-alpha-build:
+    name: Android Alpha Build (Cordova - No GPG)
+    instance_type: mac_mini_m2
+    environment:
+      java: 21 
+      node: 18
+      vars:
+        CORDOVA_ANDROID_VERSION: "12.0.0" 
+
+    # --- Build Steps (FINAL, MINIMALIST SEQUENCE) ---
     scripts:
       - name: Install Cordova CLI
         script: npm install -g cordova
@@ -18,7 +36,7 @@
           # into the project's required www folder.
           cp -r $CM_BUILD_DIR/* www/
           
-          # 5. Move the config.xml (which Cordova created) to the root of the project
+          # 5. Move config.xml (which Cordova created) to the root of the project
           mv www/config.xml . 
           
           # 6. Delete unnecessary files
@@ -38,6 +56,5 @@
           
     # --- Artifacts (Output) ---
     artifacts:
-      - "*.apk" 
       - platforms/android/app/build/outputs/**/*.apk
       

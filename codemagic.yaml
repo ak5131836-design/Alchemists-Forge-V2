@@ -2,54 +2,36 @@ workflows:
   android-build:
     name: Cordova Android Debug Build
     environment:
-      groups:
-        - codemagic_credentials
+      java: 1.8       # use supported JDK
+      node: 18
       vars:
         CORDOVA_VERSION: 12.0.0
-      java: OpenJDK 17
-      node: 18
-
     scripts:
       - name: Install Cordova CLI
         script: |
           npm install -g cordova@$CORDOVA_VERSION
-          cordova info
-
       - name: Install Android SDK Tools + Accept Licenses
         script: |
           yes | sdkmanager --licenses || true
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmdline-tools;12.0"
-
       - name: Add Android Platform
         script: |
           cordova platform rm android || true
           cordova platform add android@12.0.1
-
       - name: Generate Gradle Wrapper if missing
         script: |
           cd platforms/android/
           ./gradlew wrapper || gradle wrapper
+          chmod +x ./gradlew
           cd ../..
-
-      - name: Build APK (Debug with logs)
+      - name: Build APK (Debug)
         script: |
           cd platforms/android/
-          ./gradlew assembleDebug --warning-mode=all --stacktrace
+          ./gradlew assembleDebug --stacktrace --warning-mode all
           cd ../..
-
-      - name: Locate & copy APK artifact
+      - name: Locate & copy APK
         script: |
           APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
-          echo "APK found at: $APK_PATH"
           cp "$APK_PATH" $CM_ARTIFACTS/
-
     artifacts:
       - $CM_ARTIFACTS/*.apk
-
-    publishing:
-      email:
-        recipients:
-          - "your@email.com"
-        notify:
-          success: true
-          failure: true

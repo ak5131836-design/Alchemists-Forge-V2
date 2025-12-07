@@ -1,4 +1,24 @@
-# --- Build Steps (FINAL CORRECTED SEQUENCE) ---
+# 1. Define the mandatory version and build triggers
+# NOTE: The version key must be in the root.
+# NOTE: Removed extraneous lines that caused earlier validation failures.
+version: 1.0.0
+trigger:
+  branch:
+    - master
+    - main
+
+# 2. Define the workflows block, which contains the build instructions
+workflows:
+  android-alpha-build:
+    name: Android Alpha Build (Cordova - No GPG)
+    instance_type: mac_mini_m2
+    environment:
+      java: 21 
+      node: 18
+      vars:
+        CORDOVA_ANDROID_VERSION: "12.0.0" 
+
+    # --- Build Steps (FINAL CORRECTED SEQUENCE) ---
     scripts:
       - name: Install Cordova CLI
         script: npm install -g cordova
@@ -14,19 +34,19 @@
           # 3. Delete the boilerplate www folder created by Cordova
           rm -rf www
           
-          # 4. Copy your actual code files and assets (which are currently one directory up)
-          # into the new temp_app directory.
-          cp -r ../* .
+          # 4. Copy your actual code files and assets (which are currently one directory up: $CM_BUILD_DIR)
+          # into the new project's structure. This handles the config.xml issue.
+          cp -r $CM_BUILD_DIR/* .
           
-          # 5. Rerun the Cordova prepare command to generate the necessary 'www' content
+          # 5. Rerun the Cordova prepare command to set up the necessary 'www' content
+          # If your files were in the root, they are now copied over and accessible.
           cordova prepare
           
-          # 6. Delete the unnecessary node_modules and temp files from the root
+          # 6. Clean up unnecessary files
           rm -rf node_modules
-          rm -rf temp_app/
           
       - name: Add Android Platform
-        # This command now runs inside the temp_app directory, where config.xml exists
+        # This command runs inside the temp_app directory, where config.xml exists
         script: cordova platform add android@$CORDOVA_ANDROID_VERSION
 
       - name: Build the Android Debug APK
@@ -39,6 +59,9 @@
           
     # --- Artifacts (Output) ---
     artifacts:
-      - "*.apk" 
+      - "*.apk"
       - platforms/android/app/build/outputs/**/*.apk
-      
+
+    # --- Publishing ---
+    # We will skip publishing for now.
+    

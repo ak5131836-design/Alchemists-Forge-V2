@@ -16,43 +16,39 @@ workflows:
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0" 
 
-    # --- Build Steps (FINAL, SINGLE-SCRIPT SEQUENCE) ---
+    # --- Build Steps (FINAL, STABLE SEQUENCE) ---
     scripts:
-      - name: Full Build Pipeline
+      - name: Install Cordova CLI and Dependencies
         script: |
-          # 1. Install Cordova CLI
           npm install -g cordova
           
-          # 2. Initialize the Cordova Project in a directory named 'project'
+          # 1. Initialize the Cordova Project in a directory named 'project'
           cordova create project com.forge.alchemist "The Alchemist's Forge"
           
-          # 3. CRITICAL: Move into the new project and run all subsequent commands from here.
+          # 2. CRITICAL: Move into the new project root
           cd project
           
-          # 4. Clean the boilerplate www folder created by Cordova
+          # 3. Clean and populate the project's www folder with source files
           rm -rf www/*
+          cp -r $CM_BUILD_DIR/* www/
           
-          # 5. Copy your actual game files from the repository root (../) 
-          # into the project's required www folder.
-          cp -r ../* www/
-          
-          # 6. Move config.xml (which Cordova created) to the root of the project
-          mv www/config.xml . 
-          
-          # 7. Add Android Platform (This command is now run inside the valid 'project' directory)
+          # 4. Install the Android platform
           cordova platform add android@$CORDOVA_ANDROID_VERSION
           
-          # 8. Build the Android Debug APK
+      - name: Build the Android Debug APK and Find Artifact
+        script: |
+          # Ensure we are in the project root before building
+          cd project
+          
+          # 1. Execute the build command
           cordova build android --debug
           
-          # 9. Move artifacts (APK) back to the root ($CM_BUILD_DIR) for output
+          # 2. CRITICAL FIX: The successful APK is located in: 
+          # platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          # We copy it back to the Codemagic root ($CM_BUILD_DIR)
           cp platforms/android/app/build/outputs/apk/debug/app-debug.apk $CM_BUILD_DIR/
           
-          # Clean up unnecessary files
-          rm -rf www/node_modules
-
     # --- Artifacts (Output) ---
     artifacts:
-      - "*.apk" 
-      - platforms/android/app/build/outputs/**/*.apk
+      - "*.apk"
       

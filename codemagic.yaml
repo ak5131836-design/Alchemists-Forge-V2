@@ -1,12 +1,13 @@
 workflows:
   android-debug:
-    name: Cordova Android Debug Build ⚡ cordova-android@12
+    name: Cordova Android Debug Build ⚡ cordova-android@12.0.1 (CLI 13)
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.1"
-      node: latest
+        CORDOVA_CLI_VERSION: "latest"  # CLI 13.0.0 as of Dec 2025
+      node: latest  # >=20.17.0 for CLI 13
 
     triggering:
       events:
@@ -19,12 +20,15 @@ workflows:
           source: true
 
     scripts:
-      - name: Install Cordova + dependencies
+      - name: Install app dependencies (generates package-lock.json)
         script: |
-          npm ci
-          npm install -g cordova@$CORDOVA_ANDROID_VERSION
+          npm install  # Use 'install' not 'ci' – no lockfile on fresh clone
 
-      - name: Accept licenses + install EXACT required SDKs (33.0.2 !!)
+      - name: Install Cordova CLI globally (v13 latest)
+        script: |
+          npm install -g cordova@$CORDOVA_CLI_VERSION
+
+      - name: Accept licenses + install EXACT required SDKs (build-tools 33.0.2)
         script: |
           echo y | $ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
@@ -33,21 +37,19 @@ workflows:
             "platform-tools" \
             "cmdline-tools;latest"
 
-      - name: Add Android platform (cordova-android 12)
+      - name: Add Android platform (cordova-android@12.0.1)
         script: |
           cordova telemetry off
           cordova platform rm android || true
           cordova platform add android@$CORDOVA_ANDROID_VERSION
 
-      - name: DO NOT upgrade Gradle wrapper → keep 7.6 (required for cordova-android@12)
+      - name: Ensure gradlew executable (no upgrades – sticks to Gradle 7.6)
         script: |
-          # Absolutely critical: cordova-android 12 breaks with Gradle 8+
-          # Just make sure gradlew is executable
           cd platforms/android
           chmod +x gradlew 2>/dev/null || true
           cd ../..
 
-      - name: Build Debug APK (using Cordova directly – most reliable)
+      - name: Build Debug APK (Cordova CLI handles it reliably)
         script: |
           cordova build android --debug --verbose --device
 
@@ -56,8 +58,6 @@ workflows:
 
     publishing:
       email:
-        recipients:
-          - your-email@example.com
         notify:
           success: true
           failure: false

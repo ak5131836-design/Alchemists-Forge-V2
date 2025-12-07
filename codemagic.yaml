@@ -1,0 +1,54 @@
+workflows:
+  android-alpha-build:
+    name: Android Alpha Build (Cordova)
+    instance_type: mac_mini_m2 # Fast machine for quick build
+    environment:
+      # Automatically install Node.js and the Android SDK
+      java: 21
+      android: 34
+      node: 18
+      # Set the Cordova platform version to match the installed SDK
+      vars:
+        CORDOVA_ANDROID_VERSION: "12.0.0" 
+
+    # --- Build Steps ---
+    scripts:
+      - name: Install Cordova CLI
+        script: npm install -g cordova
+
+      - name: Install Plugins (GPG, etc.)
+        script: |
+          # Install your GPG plugin and dependencies
+          cordova plugin add cordova-plugin-googleplayservices
+          cordova plugin add com.sreedesg.cordova.gpg --variable GPG_APP_ID="YOUR_GPG_APP_ID"
+          # NOTE: REPLACE YOUR_GPG_APP_ID with your actual numeric ID
+
+      - name: Add Android Platform
+        # Use the variable set above to ensure compatibility
+        script: cordova platform add android@$CORDOVA_ANDROID_VERSION
+
+      - name: Clean up existing www structure
+        # Codemagic puts files in the root, but Cordova expects them in www
+        script: |
+          mkdir www
+          mv * www/
+          mv www/assets . # Move assets back to root for easy access if needed, or leave in www
+          mv www/platforms .
+          mv www/plugins .
+          mv www/node_modules .
+          mv www/config.xml .
+          mv www/package.json .
+          # The source files are now moved into the platform structure
+
+      - name: Build the Android Debug APK
+        # This command runs Gradle and generates the APK
+        script: cordova build android --debug --buildConfig=build.json
+
+    # --- Artifacts (Output) ---
+    artifacts:
+      - platforms/android/app/build/outputs/**/*.apk
+      - /data/data/com.termux/files/home/forge-alpha-build/platforms/android/app/build/outputs/apk/debug/app-debug.apk # Older path fallback
+
+    # --- Publishing ---
+    # Optional: Set up email publishing here
+    

@@ -16,9 +16,9 @@ workflows:
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0" 
 
-    # --- Build Steps (FINAL, CORRECTED SEQUENCE) ---
+    # --- Build Steps (FINAL, SINGLE-SCRIPT SEQUENCE) ---
     scripts:
-      - name: Install Cordova CLI and Initialize Project
+      - name: Full Build Pipeline
         script: |
           # 1. Install Cordova CLI
           npm install -g cordova
@@ -26,34 +26,31 @@ workflows:
           # 2. Initialize the Cordova Project in a directory named 'project'
           cordova create project com.forge.alchemist "The Alchemist's Forge"
           
-          # 3. CRITICAL: Switch working directory to the new project root
+          # 3. CRITICAL: Move into the new project and run all subsequent commands from here.
           cd project
           
           # 4. Clean the boilerplate www folder created by Cordova
           rm -rf www/*
           
-          # 5. Copy ALL your game files from the repository root (../) 
+          # 5. Copy your actual game files from the repository root (../) 
           # into the project's required www folder.
           cp -r ../* www/
           
           # 6. Move config.xml (which Cordova created) to the root of the project
           mv www/config.xml . 
           
-          # 7. Delete unnecessary files
-          rm -rf www/node_modules
+          # 7. Add Android Platform (This command is now run inside the valid 'project' directory)
+          cordova platform add android@$CORDOVA_ANDROID_VERSION
           
-      - name: Add Android Platform
-        # This command runs *inside* the 'project' folder due to the 'cd project' above.
-        script: cordova platform add android@$CORDOVA_ANDROID_VERSION
-
-      - name: Build the Android Debug APK
-        script: |
-          # The compilation command runs inside the 'project' directory
+          # 8. Build the Android Debug APK
           cordova build android --debug
           
-          # Move artifacts (APK) back to the root ($CM_BUILD_DIR) for output
+          # 9. Move artifacts (APK) back to the root ($CM_BUILD_DIR) for output
           cp platforms/android/app/build/outputs/apk/debug/app-debug.apk $CM_BUILD_DIR/
           
+          # Clean up unnecessary files
+          rm -rf www/node_modules
+
     # --- Artifacts (Output) ---
     artifacts:
       - "*.apk" 

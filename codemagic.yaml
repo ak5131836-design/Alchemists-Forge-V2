@@ -16,7 +16,26 @@ workflows:
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.0" 
 
-   # --- Build Steps (FINAL, STABLE SEQUENCE) ---
+# 1. MANDATORY ROOT KEY: Defines the YAML version
+version: 1.0.0
+trigger:
+  branch:
+    - master
+    - main
+
+# 2. MANDATORY ROOT KEY: Defines the build pipelines
+workflows:
+  android-alpha-build:
+    name: Android Alpha Build (Cordova - No GPG)
+    instance_type: mac_mini_m2
+    environment:
+      java: 21 
+      node: 18
+      # Set CORDOVA_ANDROID_VERSION for compatibility
+      vars:
+        CORDOVA_ANDROID_VERSION: "12.0.0" 
+
+    # --- Build Steps (FINAL, STABLE SEQUENCE) ---
     scripts:
       - name: Full Android Build Pipeline
         script: |
@@ -29,20 +48,24 @@ workflows:
           # 3. CRITICAL: Move into the new project root
           cd project
           
-          # 4. Clean and populate the project's www folder with source files
+          # 4. Clean the boilerplate www folder created by Cordova
           rm -rf www/*
-          cp -r $CM_BUILD_DIR/* www/
           
-          # 5. Add Android Platform (This command is now run inside the valid 'project' directory)
+          # 5. Copy ALL your game files (which are one level up: ../) into the project's required www folder.
+          # This copies index.html, engine.js, assets/ folder, and config.xml.
+          cp -r ../* www/
+          
+          # 6. CRITICAL FIX: The config.xml must be in the project root for 'platform add' to work.
+          # We move it from the www folder (where it was copied) to the project root (./).
+          mv www/config.xml . 
+          
+          # 7. Add Android Platform (This command is now run inside the valid 'project' directory)
           cordova platform add android@$CORDOVA_ANDROID_VERSION
           
-          # 6. Execute the build command (This will likely fail, but it starts the process)
+          # 8. Execute the build command
           cordova build android --debug
           
-          # 7. CRITICAL FIX: Find the APK file path. The actual path is often one level deeper,
-          # so we search for the file using 'find' to confirm the path, then copy it.
-          # We use a wildcard search to find the debug APK regardless of the platform structure.
-          
+          # 9. CRITICAL FIX: Locate and copy the APK file. We search for the file path, then copy it.
           echo "Attempting to locate and copy the generated APK file..."
           
           APK_PATH=$(find platforms/android/ -name "app-debug.apk")
@@ -52,6 +75,11 @@ workflows:
             # Copy the found APK to the root directory for Codemagic to pick up
             cp "$APK_PATH" $CM_BUILD_DIR/
           else
-            echo "ERROR: Failed to locate app-debug.apk after build."
+            echo "ERROR: Failed to locate app-debug.apk after build. Build failed earlier."
             exit 1 # Fail the script if the APK is not found
           fi
+          
+    # --- Artifacts (Output) ---
+    artifacts:
+      - "*.apk" # This is the target we copied the successful APK to
+      - platforms/android/app/build/outputs/**/*.apk

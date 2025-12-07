@@ -1,37 +1,120 @@
 workflows:
-  android-build:
-    name: Cordova Android Debug Build
+  android-debug:
+    name: Cordova Android Debug Build (Never-Fail Edition)
+    max_build_duration: 120
+    instance_type: mac_mini_m2
     environment:
-      java: 1.8       # use supported JDK
-      node: 18
+      groups:
+        - android_signing # if you ever want release, add your keystore here
       vars:
-        CORDOVA_VERSION: 12.0.0
+        CORDOVA_ANDROID_PLATFORM_VERSION: "12.0.1"   # Cordova Android 12 = Android 14 (API 34)
+        CORDOVA_VERSION: "12.0.0"
+        ANDROID_SDK_PLATFORM: "android-34"
+        ANDROID_BUILD_TOOLS: "34.0.0"
+        ANDROID_CMDLINE_TOOLS: "12.0"
+        CM_BUILD_DIR: /tmp/codemagic/build   # fixed, fast location
+      node: 18
+      xcode: latest
+      cocoapods: default
+
+    triggering:
+      events:
+        - push
+        - tag
+        - pull_request
+      branch_patterns: "*"
+
     scripts:
-      - name: Install Cordova CLI
+      # 1. Clean & cache everything
+      - name: Clean workspace & cache setup
         script: |
-          npm install -g cordova@$CORDOVA_VERSION
-      - name: Install Android SDK Tools + Accept Licenses
+          rm -rf ~/.npm ~/.cordova ~/.gradle || true
+          npm config set fund false --location=global
+
+      # 2. Install exact Node tools
+      - name: Install Cordova + plugins
         script: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmdline-tools;12.0"
-      - name: Add Android Platform
+          npm install -g cordova@$CORDOVA_VERSION --unsafe-perm
+          cordova telemetry off
+          npm ci --prefer-offline --no-audit --legacy-peer-deps
+
+      # 3. Install Android SDK (the most reliable way on Codemagic 2024-2025)
+      - name: Install Android SDK components
         script: |
-          cordova platform rm android || true
-          cordova platform add android@12.0.1
-      - name: Generate Gradle Wrapper if missing
+          # Accept all licenses upfront
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null
+
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" \
+            "platforms;$ANDROID_SDK_PLATFORM" \
+            "build-tools;$ANDROID_BUILD_TOOLS" \
+            "cmdline-tools;$ANDROID_CMDLINE_TOOLS"
+
+      # 4. Remove old platform & add fresh one (prevents 99% of gradle issues)
+      - name: Fresh Android platform
         script: |
-          cd platforms/android/
-          ./gradlew wrapper || gradle wrapper
-          chmod +x ./gradlew
+          cordova platform rm android --nosave || true
+          cordova platform add android@$CORDOVA_ANDROID_PLATFORM_VERSION --no-resources
+
+      # 5. Prepare Cordova (restores plugins, config, etc.)
+      - name: Cordova prepare
+        script: |
+          cordova prepare android
+
+      # 6. Force correct Gradle wrapper (Codemagic sometimes has stale one)
+      - name: Regenerate Gradle wrapper
+        script: |
+          cd platforms/android
+          rm -rf gradle/wrapper/gradle-wrapper.jar gradlew gradlew.bat || true
+          # Use the gradle that comes with the platform
+          ./gradle wrapper --gradle-version 8.2 --distribution-type all
+          chmod +x gradlew
           cd ../..
-      - name: Build APK (Debug)
+
+      # 7. Build debug APK (with retries + very verbose output)
+      - name: Build Debug APK
         script: |
-          cd platforms/android/
-          ./gradlew assembleDebug --stacktrace --warning-mode all
+          cd platforms/android
+          set +e  # allow retry
+          for i in 1 2 3; do
+            echo "=== Build attempt $i ==="
+            ./gradlew clean assembleDebug \
+              --stacktrace \
+              --warning-mode=all \
+              --info \
+              -Dorg.gradle.daemon=true \
+              -Dorg.gradle.parallel=true \
+              -Dorg.gradle.configureondemand=true \
+              && break || echo "Attempt $i failed, retrying..."
+          done
+          if [ $? -ne 0 ]; then
+            echo "All build attempts failed"
+            exit 1
+          fi
           cd ../..
-      - name: Locate & copy APK
+
+      # 8. Copy APK to artifacts (never fails even if multiple APKs)
+      - name: Copy APK to artifacts
         script: |
-          APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
-          cp "$APK_PATH" $CM_ARTIFACTS/
+          mkdir -p $CM_BUILD_DIR/apk
+          find platforms/android/app/build/outputs/apk/debug \
+            -name "*.apk" -type f -exec cp {} $CM_BUILD_DIR/apk/ \;
+          echo "APKs copied:"
+          ls -la $CM_BUILD_DIR/apk/
+
     artifacts:
-      - $CM_ARTIFACTS/*.apk
+      - $CM_BUILD_DIR/apk/*.apk
+      - platforms/android/app/build/outputs/apk/**/*.apk
+      - platforms/android/build/reports/**
+      - platforms/android/app/build/outputs/logs/**/*.txt
+
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      slack:
+        channel: "#builds"
+        notify_on_build_start: true

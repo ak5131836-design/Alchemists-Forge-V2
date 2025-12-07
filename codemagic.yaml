@@ -1,62 +1,56 @@
-version: 1.0.0
-
-trigger:
-  branch:
-    - master
-    - main
-
 workflows:
-  android-alpha-build:
-    name: Android Alpha Build (Cordova)
-    instance_type: mac_mini_m2
+  android-build:
+    name: Cordova Android Debug Build
     environment:
-      java: 17
-      node: 18
+      groups:
+        - codemagic_credentials
       vars:
-        CORDOVA_ANDROID_VERSION: "12.0.1"
-
+        CORDOVA_VERSION: 12.0.0
+      java: OpenJDK 17
+      node: 18
+      android:
+        sdk: "34"
     scripts:
       - name: Install Cordova CLI
         script: |
-          npm install -g cordova
+          npm install -g cordova@$CORDOVA_VERSION
+          cordova info
 
-      - name: Install Android SDK Tools
+      - name: Install Android SDK Tools + Accept Licenses
         script: |
-          brew install --cask android-commandlinetools || true
-          export ANDROID_HOME="$HOME/Library/Android/sdk"
-          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
-          export PATH="$ANDROID_HOME/platform-tools:$PATH"
-          echo "y" | sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-          echo "y" | sdkmanager --licenses
+          yes | sdkmanager --licenses || true
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "cmdline-tools;12.0"
 
-      - name: Add Android Platform (show errors if fail)
+      - name: Add Android Platform
         script: |
-          export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-          cordova platform add android@$CORDOVA_ANDROID_VERSION --verbose
+          cordova platform rm android || true
+          cordova platform add android@12.0.1
 
       - name: Generate Gradle Wrapper if missing
         script: |
-          cd platforms/android
-          if [ ! -f "./gradlew" ]; then
-            brew install gradle
-            gradle wrapper
-            chmod +x ./gradlew
-          fi
+          cd platforms/android/
+          ./gradlew wrapper || gradle wrapper
           cd ../..
 
-      - name: Build APK with full logs
+      - name: Build APK (Debug with logs)
         script: |
-          export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-          cd platforms/android
-          ./gradlew assembleDebug --stacktrace --warning-mode all
+          cd platforms/android/
+          ./gradlew assembleDebug --warning-mode=all --stacktrace
           cd ../..
 
-      - name: Locate & copy APK
+      - name: Locate & copy APK artifact
         script: |
-          APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
+          APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
           echo "APK found at: $APK_PATH"
-          cp "$APK_PATH" app-debug.apk
+          cp "$APK_PATH" $CM_ARTIFACTS/
 
     artifacts:
-      - app-debug.apk
-      - platforms/android/app/build/outputs/**/*.apk
+      - $CM_ARTIFACTS/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - "your@email.com"
+        notify:
+          success: true
+          failure: true

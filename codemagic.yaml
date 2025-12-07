@@ -34,12 +34,22 @@ workflows:
           export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           cordova platform add android@$CORDOVA_ANDROID_VERSION --verbose
 
+      - name: Generate Gradle Wrapper if missing
+        script: |
+          cd platforms/android
+          if [ ! -f "./gradlew" ]; then
+            brew install gradle
+            gradle wrapper
+            chmod +x ./gradlew
+          fi
+          cd ../..
+
       - name: Build APK with full logs
         script: |
           export JAVA_HOME=$(/usr/libexec/java_home -v 17)
           cd platforms/android
-          ls -la   # DEBUG: show directory content
           ./gradlew assembleDebug --stacktrace --warning-mode all
+          cd ../..
 
       - name: Locate & copy APK
         script: |

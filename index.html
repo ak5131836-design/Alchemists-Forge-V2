@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Alchemist's Forge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.png" type="image/x-icon">
+     <link rel="stylesheet" href="animations.css"> <link rel="icon" href="images/favicon.png" type="image/x-icon">
+
+</head>
+<body>
+  <script>
+        // Define handleImgError globally and early to prevent ReferenceErrors 
+        // in image onerror attributes during DOM loading.
+        window.handleImgError = function(image) {
+            image.style.display = 'none';
+        };
+    </script>
+    <div id="game-container">
+
+    <div id="game-container">
+        
+        <header class="game-header">
+            <div class="title-bar">
+                <div id="player-profile-icon">👤</div>
+                <h1>ALCHEMIST FORGE</h1>
+                <div class="header-icons">
+                    <button class="icon-btn" id="menu-btn">
+                        <span class="menu-bar"></span>
+                        <span class="menu-bar"></span>
+                        <span class="menu-bar"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="level-exp-display">
+                <span id="level-display">Level: 91</span> | <span id="exp-display">EXP: 0 / 9100</span> | <span id="date-display-item">Date: <span id="game-date">Y:1/01/JAN</span></span>
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item">⚡ <span id="mana-value">100/100</span></div> 
+                <div class="status-item">🔥 <span id="heat-value">0.0</span>%</div>
+                <div class="status-item timer"><span id="game-time">00</span>s</div>
+            </div>
+            
+            <div class="currency-bar">
+                <div class="currency-item">
+                    <img src="assets/sprites/D_coin.png" alt="D Coin" class="coin-icon" onerror="handleImgError(this)">
+                    D Coin: <span id="dcoin-value">10.00</span>
+                </div>
+                <div class="currency-item">
+                    <span class="rp-text">RP:</span> <span id="rp-value">50</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            
+            <div class="game-panel synthesis-panel">
+                <h2 class="panel-header">SYNTHESIS & FORGE</h2>
+                
+                <div class="synthesis-flow">
+                    
+                    <div class="input-col">
+                        <div class="slot" id="input-slot-1" draggable="true"></div>
+                        <p class="slot-label">Slot 1</p>
+                        <div class="slot-quantity-controls" id="quantity-controls-1" style="display:none;">
+                            <button class="qty-minus" data-slot-id="input-slot-1">-</button>
+                            <button class="qty-plus" data-slot-id="input-slot-1">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-icon">+</div>
+                    
+                    <div class="input-col">
+                        <div class="slot" id="input-slot-2" draggable="true"></div>
+                        <p class="slot-label">Slot 2</p>
+                        <div class="slot-quantity-controls" id="quantity-controls-2" style="display:none;">
+                            <button class="qty-minus" data-slot-id="input-slot-2">-</button>
+                            <button class="qty-plus" data-slot-id="input-slot-2">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-icon arrow">→</div>
+
+                    <div class="input-col output-col">
+                        <div class="slot output-slot" id="output-slot"></div>
+                        <p class="slot-label">Output</p>
+                    </div>
+                </div>
+                
+                <div id="synthesis-sliders-container" class="synthesis-sliders-container">
+                    <h3 class="panel-sub-header" style="margin-top: 0; margin-bottom: 5px; text-align: center; border-bottom: 1px dashed var(--color-border); padding-bottom: 3px;">Set Synthesis Parameters</h3>
+
+                    <div class="slider-group">
+                        <label for="temporal-frequency-slider">Temporal Freq: <span id="freq-display">50</span> Hz</label>
+                        <input type="range" id="temporal-frequency-slider" min="0" max="100" value="50" step="1">
+                        <p class="target-display">Target: <span id="freq-target">50</span> Hz</p>
+                    </div>
+
+                    <div class="slider-group">
+                        <label for="thermal-pressure-slider">Thermal Pressure: <span id="pressure-display">500</span> K</label>
+                        <input type="range" id="thermal-pressure-slider" min="0" max="1000" value="500" step="5">
+                        <p class="target-display">Target: <span id="pressure-target">500</span> K</p>
+                    </div>
+                    
+                    </div>
+                <div class="synthesis-actions">
+                    <button id="synthesize-btn" class="action-button synthesize">SYNTHESIZE</button>
+                    <button id="collect-btn" class="action-button collect">COLLECT</button>
+                </div>
+                
+                <p class="system-message" id="system-ready">Forge operational and main loop started.</p>
+            </div>
+            
+            <div class="game-panel management-panel">
+                <h2 class="panel-header">FORGE MANAGEMENT</h2>
+                
+                <div class="management-buttons">
+                    <button id="market-btn" class="management-button">Market</button>
+                    <button id="upgrade-btn" class="management-button">Upgrades</button>
+                    <button id="research-btn" class="management-button">Research</button>
+                    <button id="shop-btn" class="management-button">Shop</button>
+
+
+                </div>
+
+                <h3 class="panel-sub-header">Worker Roster (Max: <span id="max-worker-slots-display">1</span>)</h3>
+                <div id="worker-slots-container" class="worker-slots-grid">
+                    </div>
+            </div>
+        </main>
+    </div>
+  
+    <div id="market-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-market-btn">X</button>
+            
+            <div class="market-header-tabs">
+                <button class="management-button market-tab-btn active" id="sales-tab-btn">SALES</button>
+                <button class="management-button market-tab-btn" id="trends-tab-btn">TRENDS 📉</button>
+            </div>
+            
+            <h2 class="panel-header" id="market-modal-title">RESOURCE MARKET 📈</h2>
+            
+            <div id="market-sales-view" class="market-view active">
+                <div id="market-list"></div>
+                <button id="sell-all-btn" class="action-button synthesize">SELL ALL COLLECTIBLE</button>
+            </div>
+
+            <div id="market-trends-view" class="market-view hidden">
+                <div id="trend-selection-panel" class="upgrade-section" style="padding: 10px; margin-bottom: 10px;">
+                    <h4>Select Product to Track</h4>
+                    
+                    <div id="product-select-container" class="custom-select-wrapper">
+                        <button id="product-select-display" class="management-button select-display-btn" data-value="">Select Product</button>
+                        <ul id="product-dropdown-list" class="custom-dropdown-list hidden-list">
+                            </ul>
+                    </div>
+                    <p id="current-trend-status" style="font-size: 8px; text-align: center; color: var(--color-border);"></p>
+                </div>
+                
+                <h3 class="iap-category-header">Historical Price Graph</h3>
+                <div id="graph-container" style="height: 200px; width: 100%; background: #f0f0e0; border: 2px solid var(--color-border);">
+                    <p style="text-align: center; padding: 80px 0; font-size: 10px;">(Graph Rendering Area)</p>
+                </div>
+                
+                <h3 class="iap-category-header">Monthly Forecast</h3>
+                <div id="forecast-list" class="shop-list">
+                    <div class="shop-item-row">
+                        <span>Next Month (<span id="forecast-month-display">Y:1/FEB</span>):</span>
+                        <span id="forecast-value" class="cost" style="color: #2ecc71;">+0%</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="upgrades-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-shop-btn">X</button>
+            <h2 class="panel-header">UPGRADES & WORKERS 🛠️</h2>
+            
+            <div class="upgrade-section">
+                <h4>Forge Upgrades (Permanent)</h4>
+                <div id="upgrade-list" class="shop-list"></div>
+            </div>
+
+            <div class="upgrade-section">
+                <h4>Worker Hires (Automation)</h4>
+                <div id="worker-list" class="shop-list"></div>
+            </div>
+
+
+        </div>
+    </div>
+    
+    <div id="iap-shop-modal" class="modal-overlay">
+        <div class="modal-content">
+             <button class="close-btn" id="close-iap-btn">X</button>
+            <h2 class="panel-header">D COIN & RP MARKET 💰</h2>
+            
+            <div class="ad-reward-section">
+                <div class="ad-reward-item">
+                    <span>📺 Watch Ad:</span>
+                    <span class="ad-reward-value ad-dcoin-reward">100 D Coin</span>
+                    <span class="ad-reward-value ad-rp-reward">10 RP</span>
+                    <button class="management-button ad-reward-btn" id="ad-reward-btn" data-reward-id="AD_REWARD">CLAIM FREE REWARD</button>
+                </div>
+            </div>
+            
+            <h3 class="iap-category-header">CHRONOS SHARDS (D Coin)</h3>
+            <div id="dcoin-iap-list" class="shop-list iap-list-grid">
+                </div>
+
+            <h3 class="iap-category-header">RESEARCH POINTS (RP)</h3>
+            <div id="rp-iap-list" class="shop-list iap-list-grid">
+                </div>
+            
+            <div class="ad-removal-section">
+                <button class="management-button remove-ads-btn" id="remove-ads-btn" data-iap-id="IAP_REMOVE_ADS">REMOVE ALL ADS</button>
+                <span class="cost">$9.99</span>
+            </div>
+
+        </div>
+    </div>
+    <div id="recipe-book-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-recipe-btn">X</button>
+            <h2 class="panel-header">RECIPE RESEARCH BOOK 📚</h2>
+            <div id="recipe-list" class="shop-list"></div>
+
+        </div>
+    </div>
+    
+    <div id="player-profile-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-profile-btn">X</button>
+            <h3 class="panel-header">Alchemist Profile</h3>
+            
+            <div class="user-account-status" style="margin-bottom: 20px; text-align: center;">
+                <p><strong>Player ID:</strong> <span id="profile-user-id">Local (GPG Disconnected)</span></p>
+                <button id="connect-gpg-btn" class="management-button" style="margin-top: 10px;">Connect Google Play</button>
+            </div>
+            
+            <div class="profile-details" id="profile-details">
+                <p><strong>Level:</strong> <span id="profile-level">1</span></p>
+                <p><strong>Experience:</strong> <span id="profile-exp">0</span> / <span id="profile-exp-to-next">100</span></p>
+                <p><strong>D Coin:</strong> <span id="profile-dcoin">0.00</span></p>
+                <p><strong>RP:</strong> <span id="profile-rp">0</span></p>
+                <p><strong>Mana Cap:</strong> <span id="profile-max-mana">100</span></p>
+                <p><strong>Regen Rate:</strong> <span id="profile-mana-regen">1</span>/s</p>
+                <p><strong>Current Heat:</strong> <span id="profile-heat">0.0</span>%</p>
+                <p><strong>Worker Slots:</strong> <span id="profile-worker-slots">1</span> / 6</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="menu-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-menu-btn">X</button>
+            <h2 class="panel-header" style="font-size: 14px; margin-bottom: 15px;">MENU</h2>
+            
+            <div id="menu-options" class="shop-list menu-list">
+                <button class="management-button menu-option-btn" id="settings-btn">⚙️ Settings</button>
+                <button class="management-button menu-option-btn" id="coupons-btn">🎫 Coupons</button>
+                <button class="management-button menu-option-btn" id="t-and-c-btn">📜 T&C</button>
+                <button class="management-button menu-option-btn" id="credits-btn">⭐ Credits</button>
+                <button class="management-button menu-option-btn" id="about-us-btn">ℹ️ About Us</button>
+            </div>
+            
+            <div class="menu-footer">
+                <button class="management-button save-game-btn" id="save-game-btn">💾 SAVE GAME</button>
+                <button class="management-button exit-game-btn" id="exit-game-btn">❌ EXIT</button>
+            </div>
+        </div>
+    </div>
+    <div id="t-and-c-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-t-and-c-btn">X</button>
+            <h2 class="panel-header">TERMS AND CONDITIONS 📜</h2>
+            <div class="info-content-scrollable">
+                <p><strong>Section 1: Service Agreement.</strong> The Alchemist's Forge (V2.1) is provided "as is" without warranty of any kind. This is a game, and any loss of Chronos Shards, Aether Points, or digital property is solely the risk of the player.</p>
+                <p><strong>Section 2: Intellectual Property.</strong> All code, sprites, and concepts (Gaussian Synthesis Logic, Worker Fatigue System, Deterministic Market Volatility) are the intellectual property of the Forge Prime Development Syndicate (F.P.D.S.).</p>
+                <p><strong>Section 3: Game Mechanics.</strong> The use of R-MESS for material recovery is highly volatile and not guaranteed. The Gold Contract Bug (precision error) is a known feature and not a fault of the contract tender.</p>
+                <p><strong>Section 4: Termination.</strong> The F.P.D.S. reserves the right to terminate access to the Forge Prime for any player found exploiting Temporal Drift or Thermal Collapse vulnerabilities.</p>
+                <p class="small-text" style="margin-top: 15px;">By proceeding, you agree to these terms. Failure to comply may result in loss of progress and worker expulsion.</p>
+            </div>
+        </div>
+    </div>
+    <div id="about-us-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-about-us-btn">X</button>
+            <h2 class="panel-header">ABOUT THE ALCHEMIST'S FORGE ℹ️</h2>
+            <div class="info-content-scrollable">
+                <p><strong>Project:</strong> The Alchemist's Forge (V2.1 Development Baseline)</p>
+                <p><strong>Genre:</strong> Hard-Core Real-Time Strategy / Management Simulation</p>
+                <p><strong>Setting:</strong> Post-Collapse Galactic Era - Forge Prime Orbital Fabrication Platform.</p>
+                <p><strong>Philosophy:</strong> Mastery through synthesis, automation, and management of thermal and temporal risks.</p>
+                <p><strong>Core Constraint:</strong> Mobile-first 2D isometric resource flow with strict precision rules (D Coin: 4 decimals, Rates: 8 decimals).</p>
+                <p><strong>Development Focus:</strong> Stabilizing the UI (V2.1) and eliminating core stability bugs (Worker Maintenance, Gold Precision Error).</p>
+                <p class="small-text" style="margin-top: 15px;">We are dedicated to providing a deep, challenging experience for the veteran management sim enthusiast.</p>
+            </div>
+        </div>
+    </div>
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-settings-btn">X</button>
+            <h2 class="panel-header">SETTINGS ⚙️</h2>
+            
+            <div id="settings-options" class="info-content-scrollable">
+                <p><strong>Audio Volume:</strong></p>
+                <input type="range" id="audio-volume-slider" min="0" max="100" value="30" step="5">
+                <p style="margin-top: 15px;"><strong>Notifications:</strong></p>
+                
+                <div class="setting-toggle-row">
+                    <span>Level Up Alerts:</span>
+                    <button class="management-button toggle-btn" data-setting="level-up">ON</button>
+                </div>
+                
+                <div class="setting-toggle-row">
+                    <span>Low Mana Warning:</span>
+                    <button class="management-button toggle-btn" data-setting="low-mana">ON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="coupons-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-coupons-btn">X</button>
+            <h2 class="panel-header">COUPON REDEMPTION 🎫</h2>
+            
+            <div class="info-content-scrollable">
+                <p>Enter your Chronos Coupon Code below to receive bonus RP or D Coin.</p>
+                <div class="coupon-input-group" style="display:flex; gap: 5px; margin-top: 10px;">
+                    <input type="text" id="coupon-code-input" placeholder="CODE-XXX-YYYY" class="management-button" style="flex-grow: 1; padding: 10px; text-align: left; font-size: 10px; border: 2px solid var(--color-border); background-color: white; color: var(--font-color);">
+                    <button class="management-button" id="redeem-coupon-btn">REDEEM</button>
+                </div>
+                <p id="coupon-message" class="small-text" style="text-align: center; margin-top: 10px;">(Uses simulated secure Serverless Backend.)</p>
+            </div>
+        </div>
+    </div>
+    <div id="credits-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-btn" id="close-credits-btn">X</button>
+            <h2 class="panel-header">CREDITS ⭐</h2>
+            
+            <div class="info-content-scrollable">
+                <p><strong>Project Lead & Core Logic:</strong> Architect Prime</p>
+                <p><strong>UI/UX Design:</strong> Forge Artisan</p>
+                <p><strong>Visual Assets & Sprites:</strong> Synthesist Alpha</p>
+                <p><strong>LineAI Knowledge Base:</strong> Sentinel Beta</p>
+                <p><strong>Engine Stability Audit (V2.1):</strong> Gemini Core (Flash 2.5)</p>
+                <p class="small-text" style="margin-top: 15px;">Thank you for supporting the Alchemist's Forge.</p>
+            </div>
+        </div>
+    </div>
+    <div id="worker-detail-modal" class="modal-overlay">
+        <div class="modal-content worker-detail-content">
+            <button class="close-btn" id="close-worker-detail-btn">X</button>
+            
+            <div class="worker-profile-display">
+                <img id="worker-detail-image" src="" alt="Worker Image" onerror="handleImgError(this)">
+                <h4 id="worker-detail-name">Worker Name</h4>
+            </div>
+
+            <div class="worker-stats-list">
+                <p><strong>Type:</strong> <span id="worker-detail-type"></span></p>
+                <p><strong>Producing:</strong> <span id="worker-detail-resource"></span></p>
+                <p><strong>Rate:</strong> <span id="worker-detail-rate">/min</span></p>
+                <p><strong>Fatigue:</strong> <span id="worker-detail-fatigue"></span>%</p>
+                <p><strong>Status:</strong> <span id="worker-detail-status"></span></p>
+            </div>
+
+            <button id="toggle-worker-rest-btn" class="management-button">Toggle Rest/Work</button>
+            <button id="fire-worker-btn" class="management-button">Fire Worker</button>
+        </div>
+    </div>
+    
+    <div id="routes-map-sidebar">
+        <h3 class="sidebar-title">GEOGRAPHIC ROUTES 🌐</h3>
+        <div id="route-map-content">
+            <p style="font-family: sans-serif; font-size: 10px; padding: 10px;">Routes are currently offline. Establish new infrastructure here.</p>
+            <div id="routes-list-container" class="shop-list">
+                </div>
+        </div>
+    </div>
+    
+    <div id="routes-handle">
+        <p>ROUTES</p>
+    </div>
+    <div id="inventory-sidebar">
+        <h3 class="sidebar-title">Inventory</h3>
+        <div class="inventory-items-grid"></div>
+    </div>
+    
+    <div id="inventory-handle">
+        <p>INVENTORY</p>
+    </div>
+
+    <audio id="bgm_forge_loop" src="assets/audio/bgm_forge_loop.mp3" loop></audio>
+    <audio id="sfx_ui_click" src="assets/audio/sfx_ui_click.wav"></audio>
+    <audio id="sfx_synth_success" src="assets/audio/sfx_synth_success.wav"></audio>
+    <audio id="sfx_synth_fail" src="assets/audio/sfx_synth_fail.wav"></audio>
+    <audio id="sfx_forge_start" src="assets/audio/sfx_forge_start.wav"></audio>
+    <audio id="sfx_level_up" src="assets/audio/sfx_level_up.wav"></audio>
+    <audio id="sfx_research_unlock" src="assets/audio/sfx_research_unlock.wav"></audio>
+    
+    
+    <div id="drag-ghost" style="position: fixed; pointer-events: none; z-index: 5000; opacity: 0.9; display: none; width: 50px; height: 50px;">
+    </div>
+
+    <div id="level-up-animation" class="level-up-overlay">
+        <div id="level-up-content">
+            <h2 id="level-up-title">LEVEL UP!</h2>
+            <h1 id="level-up-number">92</h1>
+            <p id="level-up-reward">New Research Unlocked!</p>
+        </div>
+    </div>
+
+
+<script src="data.js"></script>
+    <script src="ai_tips_data.js"></script>
+        <script src="coupons.js"></script>
+    <script src="engine.js"></script>
+    <script src="lineai.js"></script> 
+    <script src="ui.js"></script> 
+    <script src="interaction.js"></script>
+
+
+
+
+
+</body>
+</html>

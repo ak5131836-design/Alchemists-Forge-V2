@@ -1,0 +1,170 @@
+// =================================================================
+// animations.css - BUTTER SMOOTH UI ANIMATIONS (FINAL, STABLE VERSION) 
+// FIX APPLIED: Added keyframes for Level Up Animation.
+// =================================================================
+
+/* --- 1. CORE TRANSITIONS (Improved Easing) --- */
+
+.action-button, 
+.management-button, 
+.slot-quantity-controls button,
+#player-profile-icon,
+.inventory-item, 
+.worker-slot,    
+.system-message, 
+.status-item span, 
+.level-exp-display span { 
+    transition: 
+        transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 0.15s ease-out, 
+        /* Ensure background-color transitions quickly for active state */
+        background-color 0.1s linear, 
+        color 0.4s ease-out, 
+        border-color 0.4s ease-out; 
+}
+
+/* --- 2. BUTTON PRESS KEYFRAMES AND EFFECTS (Synthesize/Collect Unified) --- */
+
+/* All Buttons (Management, Research, Buy, Synth, Collect) should use this active state for smooth press */
+.action-button:active, .management-button:active, .research-btn:active { 
+    transform: translateY(3px); 
+    box-shadow: 0 0 0 0 !important;
+    /* FIX: Force background transparency to stop cyan/inherited color showing through */
+    background-color: transparent !important; 
+}
+
+/* Synthesize Button Specific Active Color (Darker Red) */
+#synthesize-btn:active { 
+    background-color: #7b0000 !important; /* FORCES DARK RED */
+}
+
+/* CRITICAL FIX: Collect Button Specific Active Color (Ensures Dark Blue, NOT Cyan) */
+/* Increased specificity to ensure this color is used over any cyan inherited background */
+#collect-btn.action-button.collect:active { 
+    background-color: #245A85 !important; /* FORCES DARK BLUE */
+} 
+
+/* Fallback for general Collect button if the above fails */
+#collect-btn:active {
+    background-color: #245A85 !important; 
+}
+
+/* Management Button / Upgrade Button Press */
+.management-button:active { background-color: #8c6a46; }
+.research-btn:active { background-color: #b38200; } 
+
+
+/* Slot Quantity Button Press */
+.slot-quantity-controls button:active {
+    transform: translateY(1px) scale(0.95);
+    box-shadow: none;
+}
+
+/* Profile Icon Click Feedback */
+#player-profile-icon:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 rgba(0,0,0,0.3);
+}
+
+/* Inventory Item Grab Feedback */
+.inventory-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* --- 3. SLOTS AND CORE GAME ELEMENTS --- */
+
+/* Worker Slot Click Feedback */
+.worker-slot:active:not(.locked) {
+    transform: scale(0.98);
+    background-color: #e0d9ca;
+}
+
+/* --- 4. MODALS, SIDEBAR, AND LAYER TRANSITIONS (IMPROVED SIDEBAR) --- */
+
+/* Inventory Sidebar Smooth Slide Transition */
+#inventory-sidebar {
+    transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+
+/* CRITICAL FIX: Drag State Override (Instant Hide) */
+#inventory-sidebar.dragging {
+    right: calc(-1 * var(--inventory-width)) !important; 
+    pointer-events: none !important;
+    transition: none !important; 
+}
+
+/* Modal Fade/Zoom Transition for Opening/Closing (Kept for consistency) */
+.modal-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+}
+.modal-overlay.visible { 
+    opacity: 1;
+}
+
+.modal-content {
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.2, 1.0, 0.3, 1.0);
+}
+.modal-overlay.visible .modal-content {
+    transform: scale(1.0);
+}
+
+/* --- 5. GAME STATE KEYFRAMES (Pulses and Alerts) --- */
+
+/* Heat Critical Warning (Red Flash) */
+@keyframes heatFlash {
+    0% { text-shadow: 0 0 5px rgba(255, 0, 0, 0.8); }
+    50% { text-shadow: none; }
+    100% { text-shadow: 0 0 5px rgba(255, 0, 0, 0.8); }
+}
+#heat-value[style*="#e74c3c"] { 
+    animation: heatFlash 0.5s infinite step-end;
+}
+
+/* Mana Regen Pulse */
+@keyframes manaRegenPulse {
+    0% { opacity: 1.0; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1.0; }
+}
+/* Apply when Mana value is not at max */
+.status-item #mana-value:not(:empty)[data-full="false"] { 
+    animation: manaRegenPulse 1.5s infinite ease-in-out;
+}
+
+/* D Coin Gain Flash */
+@keyframes dcoinGainFlash {
+    0% { transform: scale(1.0); opacity: 1.0; }
+    50% { transform: scale(1.05); opacity: 0.8; color: var(--highlight-green); }
+    100% { transform: scale(1.0); opacity: 1.0; color: var(--font-color); }
+}
+.currency-item #dcoin-value.gain {
+    animation: dcoinGainFlash 0.3s ease-out 1;
+}
+
+/* Button Success Flash (Green Confirmation) */
+@keyframes transactionFlash {
+    0% { filter: brightness(100%); background-color: inherit; }
+    50% { filter: brightness(150%); background-color: var(--highlight-green); }
+    100% { filter: brightness(100%); background-color: inherit; }
+}
+.success-flash-button {
+    animation: transactionFlash 0.4s ease-out 1;
+}
+
+
+/* --- NEW: Level Up Keyframes --- */
+@keyframes levelUpPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    30% { transform: scale(1.1); opacity: 1; }
+    50% { transform: scale(1.0); opacity: 1; }
+    80% { transform: scale(1.0); opacity: 0.8; }
+    100% { transform: scale(1.0); opacity: 0; } /* Fade out for removal */
+}
+
+@keyframes levelUpPulse {
+    from { text-shadow: 0 0 5px var(--color-gdt-yellow); }
+    to { text-shadow: 0 0 20px var(--color-rp), 0 0 5px var(--color-gdt-yellow); }
+}

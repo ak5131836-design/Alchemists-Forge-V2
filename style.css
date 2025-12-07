@@ -1,0 +1,1304 @@
+/* =================================================================
+   style.css - COMPLETE STYLESHEET (FINAL UX/COMPACTING FIX)
+   ================================================================= */
+
+/* --- 1. GLOBAL RESET & FIXES --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    /* Removes blue highlight on mobile tap */
+    -webkit-tap-highlight-color: transparent; 
+    user-select: none; 
+}
+
+/* FIX: Force HTML to 100% viewport dimensions */
+html {
+    height: 100%;
+    width: 100%;
+    /* FIX: Prevents overscrolling on iOS/Chrome for refresh gesture */
+    -webkit-overflow-scrolling: auto !important;
+    overflow: hidden !important; 
+}
+
+/* Removes blue outline on click/focus for ALL elements */
+button:focus, div:focus, input:focus, .slot:focus {
+    outline: none;
+}
+
+/* --- 2. Root Variables --- */
+:root {
+    --color-gdt-yellow: #f8e58c; 
+    --color-background: #e9e4d5; 
+    --color-panel: #f7f3e8; 
+    --color-border: #4a3e30; 
+    --color-synthesis-btn-primary: #a80000; 
+    --color-synthesis-btn-secondary: #3a74b0; 
+    --font-color: #383025; 
+    --color-rp: #e6a900; 
+    --highlight-green: #2ecc71; 
+    --pixel-border: 4px;
+    --inventory-width: 250px; 
+}
+
+body {
+    font-family: 'Press Start 2P', cursive, monospace;
+    background-color: var(--color-background);
+    color: var(--font-color);
+    font-size: 10px; 
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* FIX: Use aggressive height definitions */
+    min-height: 100vh;
+    height: 100%; 
+    width: 100vw; 
+    padding: 10px;
+    /* CRITICAL FIX: Disable document scrolling/overscrolling which triggers refresh */
+    overflow-y: hidden !important; 
+    overflow-x: hidden;
+    touch-action: pan-x pan-y;
+}
+
+/* --- 3. Main Container & Headers --- */
+#game-container {
+    width: 95vw; /* Adjusts to viewport width on load */
+    max-width: 400px; 
+    display: flex;
+    flex-direction: column;
+    gap: 0px; 
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+    z-index: 100;
+}
+
+.game-header {
+    background-color: var(--color-gdt-yellow); 
+    padding: 10px;
+    border: var(--pixel-border) solid var(--color-border);
+    border-radius: 8px 8px 0 0; 
+    display: flex;
+    flex-direction: column;
+    gap: 5px; 
+}
+
+.title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 4px;
+    gap: 10px;
+}
+
+.title-bar h1 { font-size: 14px; flex-grow: 1; text-align: center; }
+
+#player-profile-icon {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background-color: #a8794a; 
+    border: 2px solid var(--color-border);
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 16px; color: white;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* CRITICAL FIX: Custom Pixel-Art Menu Icon */
+.header-icons #menu-btn {
+    width: 28px; 
+    height: 28px;
+    background-color: transparent; 
+    border: none; 
+    box-shadow: none; 
+    cursor: pointer;
+    position: relative;
+    padding: 0;
+    
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0; 
+    
+    color: transparent !important; 
+    font-size: 0 !important; 
+    line-height: 0 !important;
+}
+
+.header-icons #menu-btn .menu-bar {
+    display: block;
+    height: 3px; 
+    width: 20px; 
+    background-color: var(--color-border); 
+    border-radius: 1px; 
+    
+    transition: transform 0.15s ease-out, background-color 0.1s;
+}
+
+.header-icons #menu-btn:active .menu-bar {
+    transform: scaleX(0.9);
+    background-color: #5f2f75; 
+}
+/* END CRITICAL FIX: Custom Pixel-Art Menu Icon */
+
+
+/* CRITICAL FIX: Level/EXP/Date Row Alignment */
+.level-exp-display { 
+    font-size: 8px; /* Consistent original size */
+    padding: 2px 0; 
+    
+    /* NEW: Center alignment and reduced gap */
+    display: flex;
+    justify-content: center; /* FIX: Center alignment */
+    align-items: center;
+    flex-wrap: wrap; 
+    border-bottom: 1px dashed var(--color-border); /* Separator line */
+    padding-bottom: 5px;
+    gap: 10px; /* Explicit gap between main items */
+}
+
+/* Ensure spaces around the pipe are minimal */
+.level-exp-display span {
+    white-space: nowrap;
+    margin: 0; /* FIX: Removed all margin */
+}
+
+/* --- Status and Currency Bars (Flex Layout) --- */
+
+.status-bar, 
+.currency-bar {
+    /* Use flex to align Mana, Heat, Time on one row */
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    flex-wrap: wrap; 
+    padding: 5px 8px; 
+    font-size: 10px; 
+}
+
+.currency-bar { align-items: center; border-top: 1px dashed var(--color-border); padding-top: 4px; }
+
+/* Status Item Fix (Mana, Heat, Date/Time) */
+.status-item {
+    /* Only ensures the label/value stays together, but allows the items to wrap if necessary */
+    white-space: nowrap; 
+    margin-right: 12px; 
+    margin-bottom: 0; /* Ensures items stay on one line if space permits */
+}
+
+/* Currency Bar Item Fix (D Coin, RP) */
+.currency-item {
+    white-space: nowrap;
+    margin-right: 12px;
+    margin-bottom: 5px;
+}
+
+/* Ensures currency icons align properly */
+.currency-item .coin-icon {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+    vertical-align: middle;
+}
+
+.rp-text { color: var(--color-rp); text-shadow: 1px 1px 0px #705131; }
+
+/* --- 4. Panels & Synthesis --- */
+.game-panel {
+    /* Reduced padding for overall height compression */
+    background-color: var(--color-panel); padding: 8px; 
+    border-left: var(--pixel-border) solid var(--color-border);
+    border-right: var(--pixel-border) solid var(--color-border);
+    border-bottom: var(--pixel-border) solid var(--color-border);
+    border-radius: 0; 
+    /* CRITICAL FIX: Use a shadow matching the panel background to mask artifacts near the corner radii */
+    box-shadow: inset 0 0 0 1px var(--color-panel); 
+}
+.management-panel { border-radius: 0 0 8px 8px; }
+.panel-header { font-size: 10px; text-align: center; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid var(--color-border); }
+.panel-sub-header { font-size: 0.9em; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px dashed var(--color-border); padding-bottom: 3px; }
+
+/* Synthesis Flow */
+.synthesis-flow { 
+    /* Reduced vertical margin */
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; 
+    margin-bottom: 5px; /* Reduced margin */
+}
+
+/* New structural column for Input Slots */
+.input-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 55px; /* Reduced column width slightly */
+    position: relative;
+    text-align: center;
+    gap: 2px; /* Small gap between slot and label */
+}
+
+/* FIX: Override pixel font for flow icons (to fix plus sign aspect ratio) */
+.flow-icon { 
+    font-family: Arial, sans-serif !important; /* Use non-pixel font and enforce */
+    font-size: 18px; /* Slightly smaller flow icons */
+    font-weight: bold; 
+    color: var(--color-border); 
+    align-self: center; 
+    margin-bottom: 25px; /* Reduced vertical alignment margin */
+}
+.arrow { font-size: 24px; }
+
+
+/* Slot label and slot styles (Minimal changes needed) */
+.slot-label { font-size: 8px; margin-top: 0px; }
+
+/* CORRECTED .slot STYLES */
+.slot {
+    width: 50px; height: 50px;
+    background-color: #cac2ae;
+    border: 3px solid var(--color-border);
+    border-radius: 6px; 
+    z-index: 1000;
+    overflow: visible; 
+    position: relative; 
+    /* CRITICAL FIX: This inner shadow should be set to 0 to only mask corner artifacts, not spread. */
+    box-shadow: inset 0 0 0 var(--color-panel); /* Use a zeroed inset shadow matching panel color */
+}
+
+.slot img { max-width: 80%; max-height: 80%; object-fit: contain; image-rendering: pixelated; margin-bottom: 2px; }
+
+/* FIX 1: Quantity Control Styling and Positioning */
+.slot-quantity-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 50px; /* Match slot width */
+    margin-top: 4px; /* Space below the label */
+    background-color: transparent; 
+    z-index: 105; 
+}
+
+.slot-quantity-controls button {
+    padding: 2px 4px;
+    font-size: 8px;
+    line-height: 1;
+    border: 2px solid var(--color-border); /* Thicker border */
+    cursor: pointer;
+    background-color: #cac2ae; /* Match slot background */
+    color: var(--font-color);
+    box-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+    /* FIX: Ensure quantity buttons use normal font for '+' */
+    font-family: Arial, sans-serif !important;
+}
+.slot-quantity-controls button:hover { background-color: #e0d9ca; }
+.slot-quantity-controls button:disabled { background-color: #7f8c8d; border-color: #5d6d7e; color: #bdc3c7; cursor: not-allowed; box-shadow: 0 3px 0 0 #5d6d7e; transform: none; }
+
+
+/* Style for the Quantity Text Overlay (Bottom Right) */
+.slot .quantity-text {
+    position: absolute;
+    bottom: 2px; 
+    right: 2px;  
+    background-color: rgba(255, 255, 255, 0.7);
+    color: var(--color-border);
+    padding: 1px 3px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    border-radius: 2px;
+    z-index: 110; 
+    line-height: 1;
+    pointer-events: none; 
+}
+
+/* FIX 2: System Message Adaptive Styling and Border */
+/* CRITICAL COMPACTION FIX: Reduced vertical padding, margins, and min-height */
+.system-message {
+    font-family: 'Press Start 2P', cursive; 
+    font-size: 7px; /* Smaller font for status messages */
+    padding: 2px 8px; /* REDUCED vertical padding */
+    text-align: center;
+    border: 2px dashed var(--color-border); 
+    background-color: #e8e3d5; 
+    margin-top: 5px; /* Reduced margin */
+    margin-bottom: 2px; /* Reduced margin */
+    min-height: 12px; /* CRITICAL: Reduced minimum height for single-line fit */
+    line-height: 1; /* CRITICAL: Ensure single-line appearance */
+    color: var(--font-color); 
+    
+    /* VISIBILITY FIX: Ensure it doesn't overlap the inventory handle area */
+    width: calc(100% - 20px); 
+    margin-left: 10px; 
+    margin-right: 10px; 
+    box-sizing: border-box; 
+}
+
+/* CSS classes for Adaptive Coloring (Used by JS) - UPDATED BORDER COLORS */
+.system-message.ready { 
+    color: #006400; 
+    font-weight: bold; 
+    border-color: #006400; /* Adaptive Border */
+}
+.system-message.success { 
+    color: #006400; 
+    font-weight: bold; 
+    border-color: #006400; /* Adaptive Border */
+}
+.system-message.warning { 
+    color: #e6a900; 
+    border-color: #e6a900; /* Adaptive Border */
+}
+.system-message.error { 
+    color: #a80000; 
+    font-weight: bold; 
+    border-color: #a80000; /* Adaptive Border */
+}
+
+
+/* Buttons */
+.synthesis-actions { 
+    display: flex; 
+    justify-content: space-around; 
+    margin-top: 5px; /* Reduced margin */
+}
+.action-button {
+    padding: 10px 15px; border: 3px solid var(--color-border); color: white;
+    font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer;
+    text-shadow: 1px 1px 0px black; transition: transform 0.1s;
+}
+#synthesize-btn { background-color: var(--color-synthesis-btn-primary); box-shadow: 0 4px 0 0 #7b0000; }
+#collect-btn { background-color: var(--color-synthesis-btn-secondary); box-shadow: 0 4px 0 0 #285482; }
+
+.management-buttons { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.management-button {
+    width: 100%; padding: 10px; background-color: #a8794a; 
+    border: 3px solid var(--color-border); color: white;
+    font-family: 'Press Start 2P', cursive; font-size: 10px;
+    cursor: pointer; box-shadow: 0 3px 0 0 #705131; transition: transform 0.1s;
+}
+.management-button:active { transform: translateY(3px); box-shadow: 0 0 0 0 #705131; }
+.management-button:disabled { background-color: #7f8c8d; border-color: #5d6d7e; color: #bdc3c7; cursor: not-allowed; box-shadow: 0 3px 0 0 #5d6d7e; transform: none; }
+
+
+/* --- 5. Worker Slots --- */
+/* FIX: Changed to flex for horizontal scrolling */
+#worker-slots-container {
+    display: flex; /* Switch from grid */
+    flex-wrap: nowrap; /* Force all slots onto one line */
+    overflow-x: auto; /* Enable scrolling */
+    -webkit-overflow-scrolling: touch; /* Smoother scrolling */
+    gap: 8px; /* Maintain spacing between slots */
+    
+    height: 110px; /* Fixed height for scrolling */
+    
+    padding: 8px; 
+    border: 1px solid var(--color-border);
+    background-color: #e3ddd0; 
+    border-radius: 6px;
+}
+
+.worker-slot {
+    flex: 0 0 auto; /* Prevent slots from shrinking */
+    width: 110px; /* Fixed width to show ~3 at a time */
+    height: 90px; 
+    border: 2px solid var(--color-border);
+    border-radius: 4px; background-color: #cac2ae; 
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    cursor: pointer; font-size: 0.6em; text-align: center;
+    position: relative; overflow: hidden; padding: 0; 
+}
+
+.worker-slot img { width: 100%; max-height: 100%; object-fit: cover; image-rendering: pixelated; flex-shrink: 0; }
+.worker-slot .worker-name-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background-color: rgba(0, 0, 0, 0.6); color: white;
+    font-family: 'Press Start 2P', monospace; font-size: 7px; 
+    padding: 2px 0; text-align: center; line-height: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    box-sizing: border-box;
+}
+.worker-slot.empty { justify-content: center; align-items: center; color: var(--highlight-green); font-size: 2em; }
+.worker-slot.locked { background-color: #554a3e; border-color: #705131; cursor: not-allowed; filter: grayscale(80%); }
+.worker-slot.locked::before {
+    content: 'LOCKED'; position: static; transform: none; 
+    color: #e74c3c; font-weight: bold; font-size: 0.8em; 
+    text-shadow: 1px 1px 1px black; z-index: 10;
+}
+/* FIX: Override pixel font for worker icon (to fix plus sign aspect ratio) */
+.worker-slot .add-worker-icon { 
+    font-family: Arial, sans-serif !important; /* Use non-pixel font and enforce */
+    font-size: 1.5em; 
+    color: #9b59b6; 
+    font-weight: bold; 
+}
+
+/* --- 6. Inventory & Routes Sidebars --- */
+
+/* --- 6a. Inventory Sidebar --- */
+#inventory-sidebar {
+    position: fixed; top: 0; right: calc(-1 * var(--inventory-width)); 
+    width: var(--inventory-width); height: 100vh;
+    background-color: rgba(74, 62, 48, 0.95); color: white;
+    padding: 15px; box-shadow: -5px 0 10px rgba(0, 0, 0, 0.5);
+    transition: right 0.3s ease-in-out; z-index: 999; 
+    overflow-y: auto; pointer-events: none; 
+}
+#inventory-sidebar.open { right: 0; pointer-events: auto; }
+.sidebar-title { font-size: 14px; text-align: center; margin-bottom: 10px; border-bottom: 2px solid white; padding-bottom: 5px; }
+.inventory-items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; pointer-events: auto; }
+.inventory-item {
+    padding: 5px; background-color: rgba(255, 255, 255, 0.2);
+    border: 2px solid white; 
+    font-family: sans-serif; font-size: 8px; 
+    text-align: center; height: 60px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: grab; user-select: none; overflow: hidden;
+    /* NEW: Add transition for opacity to prevent flicker artifacts */
+    transition: opacity 0.05s ease-out; 
+}
+.inventory-item img { max-width: 80%; max-height: 80%; object-fit: contain; image-rendering: pixelated; margin-bottom: 2px; }
+#inventory-handle {
+    position: fixed; top: 40%; right: 0; width: 30px; height: 80px;
+    background-color: var(--color-border); border-radius: 8px 0 0 8px;
+    display: flex; justify-content: center; align-items: center; cursor: pointer;
+    font-size: 8px; color: white; writing-mode: vertical-rl;
+    z-index: 1001; box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3); pointer-events: auto;
+}
+
+/* --- 6b. Routes Map Sidebar (Mirror of Inventory) --- */
+#routes-map-sidebar {
+    position: fixed; 
+    top: 0; 
+    left: calc(-1 * var(--inventory-width)); 
+    width: var(--inventory-width); 
+    height: 100vh;
+    background-color: rgba(74, 62, 48, 0.95); 
+    color: white;
+    padding: 15px; 
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.5); 
+    transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    z-index: 999; 
+    overflow-y: auto; 
+    pointer-events: none; 
+}
+#routes-map-sidebar.open { 
+    left: 0; 
+    pointer-events: auto; 
+}
+
+#routes-handle {
+    position: fixed; 
+    top: 40%; 
+    left: 0; 
+    width: 30px; 
+    height: 80px;
+    background-color: var(--color-border); 
+    border-radius: 0 8px 8px 0; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    cursor: pointer;
+    font-size: 8px; 
+    color: white; 
+    writing-mode: vertical-rl; 
+    z-index: 1001; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); 
+    pointer-events: auto;
+}
+
+
+/* --- 7. Modals --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); display: none; 
+    justify-content: center; align-items: center; z-index: 2000; 
+}
+.modal-overlay.visible { display: flex; }
+.modal-content {
+    /* CRITICAL FIX: The background color must match the outer light-colored panel to prevent the white/transparent artifact. */
+    background-color: var(--color-panel);
+    
+    /* AGGRESSIVE FIX: Increased top/right padding to clear close button and tabs */
+    padding: 30px 30px 20px 20px; 
+    
+    /* CRITICAL ARTIFACT FIX: Use a lighter inner box-shadow to mask the rounding artifacts */
+    box-shadow: 0 0 0 4px var(--color-panel); 
+       
+    border: 5px solid var(--color-border);
+    border-radius: 8px;
+    width: 90%; 
+    max-width: 450px; 
+    max-height: 90vh;
+    overflow-y: auto; 
+    position: relative; 
+}
+.modal-content .close-btn {
+    position: absolute; 
+    top: 5px; 
+    right: 5px; 
+    z-index: 3000; /* CRITICAL: Ensure it is the highest clickable element */
+    background: var(--color-border); 
+    border: 2px solid #a8794a; 
+    color: white; 
+    font-family: 'Press Start 2P', cursive; 
+    font-size: 12px;
+    cursor: pointer; 
+    padding: 0; 
+    height: 25px; 
+    width: 25px;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    transform: translateY(1px); 
+    line-height: 1;
+    border-radius: 4px; 
+    box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+    transition: transform 0.1s;
+}
+.modal-content .close-btn:active { transform: translate(1px, 2px); box-shadow: none; }
+
+/* --- 7c. Market Modal Tabbed View Styling --- */
+.market-header-tabs {
+    display: flex;
+    justify-content: space-around;
+    gap: 5px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--color-border);
+    padding-bottom: 10px;
+    /* Position the tabs relative to the padded container */
+    position: relative;
+}
+
+.market-tab-btn {
+    flex-grow: 1;
+    font-size: 8px;
+    padding: 8px 5px;
+    background-color: #cac2ae;
+    color: var(--font-color);
+    box-shadow: 0 3px 0 0 #705131;
+}
+
+.market-tab-btn.active {
+    background-color: var(--color-synthesis-btn-primary); /* Highlight active tab */
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 0 0 0;
+    transform: translateY(3px); /* Visually pressed */
+}
+
+.market-view {
+    /* Base style for the content area */
+    transition: opacity 0.3s;
+}
+
+.market-view.hidden {
+    display: none !important;
+    opacity: 0;
+}
+.market-view.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Shop list content uses clean font */
+#market-list { 
+    margin: 10px 0 15px 0; /* FIX: Adjusted margin */
+    padding: 8px; 
+    border: 2px dashed var(--color-border); 
+    background-color: #f0f0e0; color: var(--font-color); 
+    font-family: sans-serif; 
+}
+/* Generic shop list styling (Applies to upgrades/workers/research) */
+.shop-list {
+    margin: 10px 0 20px 0; padding: 8px; 
+    border: 2px dashed var(--color-border); 
+    background-color: #f0f0e0; color: var(--font-color); 
+    font-family: sans-serif; 
+}
+.modal-content h3 { font-size: 10px; margin-bottom: 15px; text-decoration: underline; text-align: center; }
+
+/* --- 8. List Item Alignment (CRITICAL FIX) --- */
+.market-item-row, .shop-item-row, .recipe-item {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 8px 0; /* FIX: Increased padding for list item height */
+    border-bottom: 1px dotted var(--font-color); 
+    font-size: 10px; 
+    gap: 8px; /* FIX: Increased gap */
+    flex-wrap: nowrap; 
+    min-height: 40px; 
+    transition: background-color 0.4s ease-out; 
+}
+.market-item-row:last-child, .shop-item-row:last-child, .recipe-item:last-child { border-bottom: none; }
+
+/* CRITICAL FIX: Price Column Alignment */
+.cost { 
+    color: var(--color-rp); 
+    font-weight: bold; 
+    flex-shrink: 0; 
+    width: 70px; 
+    text-align: right; 
+    font-size: 10px;
+    position: relative; 
+    top: auto; 
+    right: auto;
+    line-height: normal; 
+}
+
+/* Description Column */
+.shop-item-row span:first-child, .recipe-item span:first-child {
+    flex-grow: 1; 
+    padding-right: 5px;
+    align-self: center; 
+    line-height: 1.2; 
+}
+/* Market item description should also span flexibly */
+.market-item-row span:first-child {
+    flex-grow: 1; 
+    line-height: 1.2;
+}
+
+
+/* CRITICAL FIX: BUY GROUP CONTAINER (JS structural addition) */
+.buy-group {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center; 
+    gap: 5px; 
+    padding-right: 5px; 
+}
+
+/* CRITICAL FIX: List Item Button Sizing and Alignment */
+.upgrade-list .shop-item-row button, .worker-list .shop-item-row button, .market-item-row button {
+    flex-shrink: 0; 
+    padding: 0; 
+    font-size: 8px; /* Slightly larger font for readability */
+    margin-left: auto;
+    
+    /* Enforce Fixed Dimensions for Uniformity */
+    width: 75px; 
+    height: 30px; 
+    
+    background-color: #a8794a; border: 3px solid var(--color-border); color: white;
+    font-family: 'Press Start 2P', cursive;
+    
+    /* Flexbox centering for button text */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative; 
+    right: -5px; 
+    top: auto;
+}
+
+/* --- 9. Upgrade/Worker Specific Styling (Vertical Spacing & Hierarchy) --- */
+
+/* Structural Container for Name/Description Stacking */
+.upgrade-description {
+    display: flex;
+    flex-direction: column; 
+    flex-grow: 1;
+    max-width: calc(100% - 150px); 
+    line-height: 1.1; 
+    align-self: center; 
+}
+
+/* Upgrade Name (Pixel Font, High Hierarchy) */
+.upgrade-description .upgrade-title {
+    font-family: 'Press Start 2P', cursive; 
+    font-size: 8px;
+    padding-bottom: 2px; 
+    display: inline-block;
+    color: #7d3c98; 
+}
+
+/* Upgrade Effect Text (Clean Font, Low Hierarchy) */
+.upgrade-description .upgrade-effect-text {
+    font-family: sans-serif; 
+    font-size: 10px;
+    line-height: 1.2;
+    margin-top: 0px; 
+    padding-top: 0px;
+    white-space: normal;
+}
+
+
+/* Recipe/Research Status Feedback */
+.recipe-item .status-unlocked { color: #006400; font-weight: bold; } 
+.recipe-item .status-locked { color: #e74c3c; font-weight: bold; }
+.research-btn {
+    background-color: var(--color-rp); color: var(--font-color);
+    border: 2px solid #b38200; padding: 4px 6px;
+    font-family: 'Press Start 2P', cursive; font-size: 6px;
+    cursor: pointer; box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5); transition: transform 0.1s;
+}
+
+/* Upgrade Sections */
+.upgrade-section { margin-bottom: 20px; padding: 10px; border: 1px solid var(--color-border); background-color: #f0f0e0; border-radius: 4px; }
+.upgrade-section h4 { font-size: 10px; margin-bottom: 10px; text-align: center; color: var(--font-color); text-decoration: underline; }
+.category-header { font-family: 'Press Start 2P', cursive; font-size: 10px; padding: 5px 0; margin-bottom: 5px; text-align: left; color: var(--color-border); border-bottom: 2px dashed var(--color-border); }
+
+/* Worker Detail Modal Styling */
+.worker-detail-content { text-align: center; padding: 15px; display: flex; flex-direction: column; gap: 10px; font-family: sans-serif; }
+.worker-profile-display { display: flex; flex-direction: column; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--color-border); }
+.worker-profile-display img { width: 80px; height: 80px; object-fit: contain; border: 3px solid var(--color-border); border-radius: 50%; margin-bottom: 8px; image-rendering: pixelated; background-color: #d1b49a; }
+/* NEW: General stat list container styling */
+.worker-stats-list, .profile-details {
+    text-align: left; 
+    margin-bottom: 15px; 
+    border: 1px solid var(--color-border); 
+    padding: 10px; 
+    background-color: #f0f0e0; 
+    border-radius: 4px; 
+    font-family: sans-serif; 
+}
+
+/* NEW: Worker/Profile stat line alignment */
+.worker-stats-list p, .profile-details p { 
+    display: flex; 
+    /* Use space-between for clean left/right alignment */
+    justify-content: space-between; 
+    padding: 3px 0; 
+    border-bottom: 1px dotted rgba(0,0,0,0.1); 
+    font-size: 10px; 
+}
+
+.worker-stats-list p:last-child, .profile-details p:last-child { border-bottom: none; }
+.worker-stats-list strong, .profile-details strong { color: var(--color-border); }
+.worker-detail-content .management-button { width: 100%; margin-top: 5px; }
+
+/* --- CRITICAL UI FIXES FOR MARKET BUTTON --- */
+/* FIX: Force the SELL ALL button to use the dark red styling (like SYNTHESIZE) 
+   and override any grey default or disabled styles if the button is active/enabled. */
+#sell-all-btn {
+    background-color: var(--color-synthesis-btn-primary) !important;
+    box-shadow: 0 4px 0 0 #7b0000 !important;
+    color: white !important;
+}
+
+#sell-all-btn:active {
+    background-color: #7b0000 !important;
+}
+
+/* --- NEW: IAP MODAL STYLING (From Index.html Update) --- */
+
+.iap-category-header { 
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px; 
+    text-align: center; 
+    margin: 15px 0 10px 0; 
+    padding: 5px; 
+    border-bottom: 2px dashed var(--color-border);
+    color: var(--color-border);
+}
+
+/* Ad Reward Section (Single row alignment) */
+.ad-reward-section {
+    border: 2px dashed var(--highlight-green);
+    background-color: #e8f5e9;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.ad-reward-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8px;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.ad-reward-value {
+    color: var(--highlight-green);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.ad-reward-btn {
+    flex-shrink: 0;
+    width: 100%;
+    font-size: 7px;
+    padding: 5px;
+    margin: 5px 0 0 0; /* Margin on top for separation from rewards */
+}
+
+/* IAP List Grid (Visual improvement for shop items) */
+.iap-list-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px 10px; 
+}
+
+/* IAP Item Row Styling */
+.iap-item-row {
+    display: flex; 
+    align-items: center; 
+    padding: 10px 0; 
+    border-bottom: 1px dotted var(--font-color); 
+    font-size: 10px; 
+    gap: 10px; 
+    min-height: 60px;
+}
+.iap-item-row:last-child { border-bottom: none; }
+
+.iap-item-row .iap-image {
+    width: 40px; 
+    height: 40px; 
+    flex-shrink: 0; 
+    image-rendering: pixelated;
+    object-fit: contain;
+    background-color: #d1b49a;
+    border: 2px solid var(--color-border);
+}
+
+.iap-description {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.iap-title { 
+    font-family: 'Press Start 2P', cursive;
+    font-size: 8px;
+    color: #7d3c98; 
+}
+
+.iap-price-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* CRITICAL FIX: Ensure BUY button and Price are clearly aligned and readable */
+.iap-price-group .cost { 
+    color: var(--color-rp); 
+    font-size: 10px; 
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.iap-price-group .management-button {
+    width: 60px; /* Smaller, cleaner buy button */
+    font-size: 8px;
+    padding: 5px;
+    height: 25px;
+    margin: 0;
+}
+
+/* Remove Ads Section Styling */
+.ad-removal-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-top: 2px dashed var(--color-border);
+    margin-top: 15px;
+    background-color: #f0f0e0;
+}
+
+.ad-removal-section .management-button {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+
+.ad-removal-section .cost {
+     color: var(--color-rp); 
+     font-size: 10px; 
+     font-weight: bold;
+     flex-shrink: 0;
+}
+
+/* --- 9b. Custom Select Dropdown Styling (Non-Native Fix) --- */
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 8px 0; /* Matches original margin */
+}
+
+.select-display-btn {
+    width: 100%;
+    /* Override management-button specific styles for smaller text/padding if needed */
+    font-size: 10px;
+    padding: 8px 10px;
+    text-align: left; /* Align text left */
+    pointer-events: auto;
+    
+    /* Add custom arrow indicator (down arrow icon) */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="white"><polygon points="0,0 5,10 10,0"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 8px;
+}
+
+.custom-dropdown-list {
+    position: absolute;
+    top: 100%; /* Position below the button */
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--color-panel); /* Light background */
+    border: 3px solid var(--color-border);
+    list-style: none;
+    z-index: 500; /* Ensure it floats above other modal content */
+    margin-top: -3px; /* Overlap border with button */
+    box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+}
+
+.custom-dropdown-list.hidden-list {
+    display: none;
+}
+
+.custom-dropdown-list li {
+    padding: 8px 10px;
+    font-family: sans-serif;
+    font-size: 10px;
+    cursor: pointer;
+    border-bottom: 1px dotted #ccc;
+    background-color: white;
+}
+
+.custom-dropdown-list li:hover {
+    background-color: #f8e58c; /* Highlight on hover */
+}
+
+/* --- NEW: MARKET TRENDS GRAPH STYLES (Line Graph) --- */
+
+/* Style the overall graph container */
+#graph-container {
+    height: 200px;
+    width: 100%;
+    background: #f0f0e0;
+    border: 3px solid var(--color-border);
+    border-radius: 4px;
+    /* CRITICAL FIX: Increased bottom padding to 45px to prevent month label clipping */
+    padding: 10px 5px 45px 25px; 
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); 
+    overflow-x: auto; /* CRITICAL FIX: Enable horizontal scrolling */
+    overflow-y: hidden; 
+    position: relative; 
+}
+
+/* Container for the line graph visualization (Stays small relative to scrollable container) */
+#graph-visualization-area {
+    position: relative; 
+    height: 100%;
+    width: 100%;
+    /* Use a central horizontal line for the 1.0 (Base Price) axis */
+    border-bottom: 1px dashed #7f8c8d; /* Subtle line at the bottom of the graph area */
+    display: flex; /* Flex is used for the horizontal axis labels */
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 0px; 
+}
+
+/* Styles for the graph data points and the line connecting them (Injected by JS) */
+.graph-point {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+    margin-left: -4px; /* Center point */
+    margin-bottom: -4px; /* Align point to the calculated Y position */
+    cursor: pointer;
+}
+
+.graph-line {
+    position: absolute;
+    height: 2px;
+    background-color: var(--color-border);
+    z-index: 5;
+    transform-origin: left center;
+}
+
+.axis-label {
+    position: absolute;
+    bottom: -15px; /* Position below the graph area, adjusted from the new padding */
+    font-size: 8px;
+    color: var(--font-color);
+    text-align: center;
+    width: 30px; /* CRITICAL FIX: Adjusted from 40px to 30px */
+    margin-left: -15px; /* CRITICAL FIX: Adjusted from -20px to center 30px label */
+}
+
+/* Remove old bar styles (from the previous iteration) */
+.graph-bar {
+    display: none !important; /* Force removal of old bar styles */
+}
+.graph-label {
+    display: none !important;
+}
+
+/* --- NEW: Synthesis Sliders Styling --- */
+
+.synthesis-sliders-container {
+    /* Reduced vertical padding */
+    padding: 5px 10px;
+    border: 2px dashed var(--color-border);
+    background-color: #e3ddd0;
+    margin-top: 10px; /* Reduced margin */
+    margin-bottom: 5px; /* Reduced margin */
+}
+
+.slider-group {
+    margin-bottom: 10px; /* Reduced margin between sliders */
+}
+
+.slider-group label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 7px; /* Smaller font for labels */
+    display: block;
+    margin-bottom: 3px; /* Reduced label margin */
+    color: var(--color-border);
+}
+
+.slider-group .target-display {
+    font-family: sans-serif;
+    font-size: 7px; /* Smaller target display font */
+    text-align: right;
+    margin-top: 3px;
+    color: #006400; /* Target color */
+    font-weight: bold;
+}
+
+/* Custom Range Input Styling (Pixel-Art Theme) */
+input[type=range] {
+    -webkit-appearance: none; /* Hides the slider in Chrome/Safari/Opera */
+    width: 100%; /* Full-width */
+    height: 10px;
+    background: transparent; /* Needed for custom track */
+}
+
+/* TRACK */
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 5px; /* Slightly thinner track */
+    cursor: pointer;
+    background: #cac2ae;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+}
+input[type=range]::-moz-range-track {
+    width: 100%;
+    height: 5px;
+    cursor: pointer;
+    background: #cac2ae;
+    border: 2px solid var(--color-border);
+    border-radius: 4px;
+}
+
+/* THUMB (Handle) */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px; /* Slightly smaller thumb */
+    width: 12px;
+    border-radius: 4px;
+    background: var(--color-synthesis-btn-primary); /* Red/Primary Color */
+    cursor: pointer;
+    margin-top: -5px; /* Adjusted center */
+    border: 2px solid var(--color-border);
+    box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+}
+input[type=range]::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 4px;
+    background: var(--color-synthesis-btn-primary);
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+}
+
+/* --- NEW: Level Up Animation Overlay (Base Styles) --- */
+.level-up-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 5000; /* Highest priority */
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-out;
+    pointer-events: none;
+}
+
+.level-up-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+#level-up-content {
+    text-align: center;
+    color: var(--color-gdt-yellow); /* Bright color for contrast */
+    text-shadow: 0 0 10px #e6a900;
+    transform: scale(0.5);
+    opacity: 0;
+}
+
+#level-up-title {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+
+#level-up-number {
+    font-size: 5em;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+#level-up-reward {
+    font-size: 0.8em;
+}
+
+/* Class applied to start the animation */
+.level-up-overlay.active #level-up-content {
+    animation: levelUpPop 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards, 
+               levelUpPulse 0.5s infinite alternate 0.5s;
+}
+
+/* --- UPDATED MENU MODAL STYLING (Aesthetic Fixes: Color & Size) --- */
+
+/* 1. Modal Width Adjustment */
+#menu-modal .modal-content {
+    /* Increased max-width for better horizontal balance (350px) */
+    max-width: 350px; 
+}
+
+/* 2. Menu Options Container (Base styling, unchanged) */
+.menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+    border: 2px solid var(--color-border);
+    background-color: #e3ddd0; 
+}
+
+/* 3. Menu Option Buttons (Purple -> Theme Brown/Gold) */
+.menu-option-btn {
+    width: 100%;
+    padding: 12px 10px;
+    font-size: 10px;
+    text-align: left;
+    
+    /* CRITICAL FIX: Change from Purple to Theme Brown/Gold */
+    background-color: #a8794a; 
+    box-shadow: 0 4px 0 0 #705131; /* Darker brown shadow */
+    color: white; /* Keep text white for contrast */
+}
+
+.menu-option-btn:active {
+    background-color: #705131 !important; /* Darker activation color */
+}
+
+.menu-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+/* 4. Save Game Button (Green -> Theme Brown with Green Status Cue) */
+.save-game-btn {
+    /* Base color is theme brown, with a light green text cue */
+    background-color: #a8794a;
+    box-shadow: 0 3px 0 0 #705131; 
+    color: #c9e6c9; 
+}
+.save-game-btn:active {
+    background-color: #705131 !important;
+}
+
+/* 5. Exit Button (Red -> Theme Brown with Red Status Cue) */
+.exit-game-btn {
+    /* Base color is theme brown, with a light red text cue */
+    background-color: #a8794a; 
+    box-shadow: 0 3px 0 0 #705131; 
+    color: #ff9999; 
+}
+.exit-game-btn:active {
+    background-color: #705131 !important;
+}
+
+/* --- END UPDATED MENU MODAL STYLING --- */
+
+
+/* --- NEW: Info Modal Content Styling --- */
+.info-content-scrollable {
+    font-family: sans-serif;
+    font-size: 10px;
+    line-height: 1.4;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    background-color: #f0f0e0;
+    max-height: 50vh; /* Limits height to prevent modal from stretching too tall */
+    overflow-y: auto;
+    border-radius: 4px;
+}
+
+.info-content-scrollable p {
+    margin-bottom: 8px;
+}
+
+.info-content-scrollable strong {
+    color: var(--color-synthesis-btn-primary);
+}
+
+.small-text {
+    font-size: 8px;
+    color: #7f8c8d;
+}
+/* --- END NEW: Info Modal Content Styling --- */
+
+/* --- NEW: Settings Modal Specific Styling --- */
+.setting-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px dotted rgba(0,0,0,0.1);
+    font-size: 10px;
+}
+
+.setting-toggle-row:last-child {
+    border-bottom: none;
+}
+
+.setting-toggle-row .toggle-btn {
+    flex-shrink: 0;
+    width: 50px;
+    height: 20px;
+    padding: 2px;
+    font-size: 8px;
+    line-height: 1;
+    background-color: var(--highlight-green);
+    box-shadow: 0 2px 0 0 #1e8449;
+    /* Custom override for toggle text color */
+    color: white !important; 
+}
+
+.setting-toggle-row .toggle-btn.off {
+    background-color: #e74c3c;
+    box-shadow: 0 2px 0 0 #c0392b;
+}
+
+/* Adjustments for input[type=text] in modals */
+.coupon-input-group input[type=text]::placeholder {
+    color: #a8a8a8;
+}
+/* --- END NEW: Settings Modal Specific Styling --- */

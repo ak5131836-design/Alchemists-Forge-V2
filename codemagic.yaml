@@ -10,17 +10,17 @@ workflows:
     name: Android Alpha Build (Cordova)
     instance_type: mac_mini_m2
     environment:
-      java: 17          # ← FIXED: Java 21 → 17
+      java: 17
       node: 18
       vars:
-        CORDOVA_ANDROID_VERSION: "12.0.0"
+        CORDOVA_ANDROID_VERSION: "12.0.1"
 
     scripts:
       - name: Install Cordova CLI
         script: |
           npm install -g cordova
 
-      - name: Install Android SDK
+      - name: Install Android SDK Tools
         script: |
           brew install --cask android-commandlinetools || true
           export ANDROID_HOME="$HOME/Library/Android/sdk"
@@ -31,18 +31,17 @@ workflows:
 
       - name: Prepare Cordova Android Platform
         script: |
-          if [ ! -d "platforms/android" ]; then
-            cordova platform add android@$CORDOVA_ANDROID_VERSION
-          else
-            cordova prepare android
-          fi
+          rm -rf platforms/android || true
+          cordova platform add android@$CORDOVA_ANDROID_VERSION
 
-      - name: Build APK (Debug)
+      - name: Build APK (Debug with full logs)
         script: |
-          export JAVA_HOME=$(/usr/libexec/java_home -v 17)   # ← Force Java 17 for Gradle
-          cordova build android --debug
+          export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+          cd platforms/android
+          ./gradlew assembleDebug --stacktrace --warning-mode all
+          cd ../..
 
-      - name: Locate & copy APK
+      - name: Locate & copy APK artifact
         script: |
           APK_PATH=$(find platforms/android/app/build/outputs/apk/debug -name "*.apk" | head -1)
           echo "APK found at: $APK_PATH"

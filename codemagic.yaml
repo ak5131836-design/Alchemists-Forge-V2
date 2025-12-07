@@ -16,40 +16,20 @@ workflows:
       vars:
         # Set the target Cordova Android version
         CORDOVA_ANDROID_VERSION: "12.0.0" 
-# --- Build Steps (FINAL, STABLE SEQUENCE) ---
+# --- Build Steps (FINAL, SIMPLEST SEQUENCE) ---
     scripts:
       - name: Full Android Build Pipeline
         script: |
           # 1. Install Cordova CLI
           npm install -g cordova
           
-          # 2. Initialize the Cordova Project in a directory named 'project'
-          cordova create project com.forge.alchemist "The Alchemist's Forge"
-          
-          # 3. CRITICAL: Move into the new project root
-          cd project
-          
-          # 4. Clean the boilerplate www folder created by Cordova
-          rm -rf www/*
-          
-          # 5. CRITICAL FIX: Copy ONLY game files and assets into the www folder.
-          # We use a pattern that excludes hidden files (.git, .bashrc, etc.)
-          cp -r ../*.html www/
-          cp -r ../*.js www/
-          cp -r ../*.css www/
-          cp -r ../config.xml www/
-          cp -r ../assets www/
-          
-          # 6. CRITICAL FIX: The config.xml must be in the project root for 'platform add' to work.
-          mv www/config.xml . 
-          
-          # 7. Add Android Platform (This command is now run inside the valid 'project' directory)
+          # 2. Add Android Platform (config.xml is now in the root)
           cordova platform add android@$CORDOVA_ANDROID_VERSION
           
-          # 8. Execute the build command
+          # 3. Execute the build command
           cordova build android --debug
           
-          # 9. CRITICAL FIX: Locate and copy the APK file. 
+          # 4. CRITICAL FIX: Locate and copy the APK file. We search for the file path, then copy it.
           echo "Attempting to locate and copy the generated APK file..."
           
           APK_PATH=$(find platforms/android/ -name "app-debug.apk")
@@ -57,7 +37,7 @@ workflows:
           if [ -f "$APK_PATH" ]; then
             echo "SUCCESS: Found APK at $APK_PATH"
             # Copy the found APK to the root directory for Codemagic to pick up
-            cp "$APK_PATH" $CM_BUILD_DIR/
+            cp "$APK_PATH" .
           else
             echo "ERROR: Failed to locate app-debug.apk after build. Build failed earlier."
             exit 1 # Fail the script if the APK is not found
@@ -66,7 +46,6 @@ workflows:
     # --- Artifacts (Output) ---
     artifacts:
       - "*.apk"
-
 
       - platforms/android/app/build/outputs/**/*.apk
       

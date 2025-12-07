@@ -1,13 +1,12 @@
 workflows:
   android-debug:
-    name: Cordova Android Debug Build ⚡ cordova-android@12.0.1 (CLI 13)
+    name: Cordova Android Debug Build – cordova-android@12.0.1
     max_build_duration: 60
     instance_type: mac_mini_m2
     environment:
       vars:
         CORDOVA_ANDROID_VERSION: "12.0.1"
-        CORDOVA_CLI_VERSION: "latest"  # CLI 13.0.0 as of Dec 2025
-      node: latest  # >=20.17.0 for CLI 13
+      node: latest
 
     triggering:
       events:
@@ -20,15 +19,15 @@ workflows:
           source: true
 
     scripts:
-      - name: Install app dependencies (generates package-lock.json)
+      - name: Install project dependencies
         script: |
-          npm install  # Use 'install' not 'ci' – no lockfile on fresh clone
+          npm install   # safe even if package.json is tiny or missing deps
 
-      - name: Install Cordova CLI globally (v13 latest)
+      - name: Install Cordova CLI (latest = 13.x, fully compatible)
         script: |
-          npm install -g cordova@$CORDOVA_CLI_VERSION
+          npm install -g cordova
 
-      - name: Accept licenses + install EXACT required SDKs (build-tools 33.0.2)
+      - name: Install exact Android SDK components required by cordova-android@12
         script: |
           echo y | $ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
@@ -37,27 +36,31 @@ workflows:
             "platform-tools" \
             "cmdline-tools;latest"
 
-      - name: Add Android platform (cordova-android@12.0.1)
+      - name: Add Android platform cordova-android@12.0.1
         script: |
           cordova telemetry off
           cordova platform rm android || true
           cordova platform add android@$CORDOVA_ANDROID_VERSION
 
-      - name: Ensure gradlew executable (no upgrades – sticks to Gradle 7.6)
+      - name: Make gradlew executable (never upgrade it!)
         script: |
-          cd platforms/android
-          chmod +x gradlew 2>/dev/null || true
-          cd ../..
+          cd platforms/android && chmod +x gradlew 2>/dev/null || true && cd ../..
 
-      - name: Build Debug APK (Cordova CLI handles it reliably)
+      - name: Build Debug APK
         script: |
           cordova build android --debug --verbose --device
 
     artifacts:
       - platforms/android/app/build/outputs/apk/debug/app-debug.apk
 
-    publishing:
-      email:
-        notify:
-          success: true
-          failure: false
+    # ← Completely remove the publishing block if you don't use it
+    # (Codemagic throws validation error when `email` exists but `recipients` is missing)
+
+    # If you DO want email notifications, uncomment and add your email:
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - your-real-email@example.com
+    #     notify:
+    #       success: true
+    #       failure: true

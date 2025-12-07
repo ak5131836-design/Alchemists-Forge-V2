@@ -14,25 +14,7 @@ workflows:
       java: 21 
       node: 18
       vars:
-        CORDOVA_ANDROID_VERSION: "12.0.0" 
-
-# 1. MANDATORY ROOT KEY: Defines the YAML version
-version: 1.0.0
-trigger:
-  branch:
-    - master
-    - main
-
-# 2. MANDATORY ROOT KEY: Defines the build pipelines
-workflows:
-  android-alpha-build:
-    name: Android Alpha Build (Cordova - No GPG)
-    instance_type: mac_mini_m2
-    environment:
-      java: 21 
-      node: 18
-      # Set CORDOVA_ANDROID_VERSION for compatibility
-      vars:
+        # Set the target Cordova Android version
         CORDOVA_ANDROID_VERSION: "12.0.0" 
 
     # --- Build Steps (FINAL, STABLE SEQUENCE) ---
@@ -43,16 +25,17 @@ workflows:
           npm install -g cordova
           
           # 2. Initialize the Cordova Project in a directory named 'project'
+          # This command is run from the $CM_BUILD_DIR (root)
           cordova create project com.forge.alchemist "The Alchemist's Forge"
           
-          # 3. CRITICAL: Move into the new project root
+          # 3. CRITICAL: Switch working directory to the new project root
           cd project
           
           # 4. Clean the boilerplate www folder created by Cordova
           rm -rf www/*
           
           # 5. Copy ALL your game files (which are one level up: ../) into the project's required www folder.
-          # This copies index.html, engine.js, assets/ folder, and config.xml.
+          # This copies index.html, assets/ folder, and config.xml from the GitHub root.
           cp -r ../* www/
           
           # 6. CRITICAL FIX: The config.xml must be in the project root for 'platform add' to work.
@@ -68,6 +51,7 @@ workflows:
           # 9. CRITICAL FIX: Locate and copy the APK file. We search for the file path, then copy it.
           echo "Attempting to locate and copy the generated APK file..."
           
+          # Find the APK file by name anywhere in the build outputs
           APK_PATH=$(find platforms/android/ -name "app-debug.apk")
           
           if [ -f "$APK_PATH" ]; then
@@ -83,3 +67,4 @@ workflows:
     artifacts:
       - "*.apk" # This is the target we copied the successful APK to
       - platforms/android/app/build/outputs/**/*.apk
+      
